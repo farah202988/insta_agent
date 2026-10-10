@@ -1,0 +1,7 @@
+[
+  {"id": "NK-AF1-BL", "name": "Nike Air Force 1", "category": "basket", "color": "blanc", "price": 289, "stock": {"40": 3, "41": 2, "42": 5, "43": 0}},
+  {"id": "NK-AF1-NR", "name": "Nike Air Force 1", "category": "basket", "color": "noir", "price": 289, "stock": {"41": 1, "42": 2, "43": 4}},
+  {"id": "AD-SAM-BL", "name": "Adidas Samba", "category": "basket", "color": "blanc", "price": 259, "stock": {"39": 2, "40": 3, "41": 0, "42": 1}},
+  {"id": "NB-530-GR", "name": "New Balance 530", "category": "basket", "color": "gris", "price": 249, "stock": {"40": 2, "41": 2, "42": 2, "43": 1}},
+  {"id": "CL-MOC-NR", "name": "Mocassin cuir classique", "category": "mocassin", "color": "noir", "price": 179, "stock": {"41": 3, "42": 3, "43": 2, "44": 1}}
+]
