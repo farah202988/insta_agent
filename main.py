@@ -259,7 +259,7 @@ def build_tools(sender_id: str):
         return {"status": "ok"}
 
     return [search_products, check_stock, create_order, handoff_to_human]
-    return [search_products, check_stock, send_product_photo, create_order, handoff_to_human]
+    
 
 
 # ---------- Instagram ----------
