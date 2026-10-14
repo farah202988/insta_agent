@@ -5,6 +5,7 @@ import os
 import threading
 import time
 from typing import Optional
+from urllib.parse import quote
 
 import httpx
 from dotenv import load_dotenv
@@ -34,6 +35,7 @@ IG_TOKEN = os.getenv("IG_ACCESS_TOKEN")
 GEMINI_KEY = os.getenv("GEMINI_API_KEY")
 
 GRAPH_URL = "https://graph.instagram.com/v26.0/me/messages"
+PUBLIC_BASE_URL = os.getenv("PUBLIC_BASE_URL", "https://insta-agent-8dox.onrender.com").rstrip("/")
 
 # --- IA : modèles essayés dans l'ordre ---
 gemini = genai.Client(api_key=GEMINI_KEY)
@@ -62,6 +64,10 @@ Règles absolues :
 - Avant d'appeler create_order, fais un récapitulatif (produit, pointure, quantité,
   prix total, nom, téléphone, adresse) et attends un "oui" explicite du client.
 - Si le produit ou la pointure n'est pas disponible, propose une alternative du catalogue.
+- Si le client demande une photo d'un article, vérifie d'abord le produit avec
+  search_products, puis utilise send_product_photo avec sa référence exacte.
+- Ne dis pas qu'une photo a été envoyée si l'outil signale une erreur ou qu'aucune photo
+  n'est enregistrée pour cet article.
 - Si le client est mécontent, demande un remboursement, un retour, ou quelque chose
   que tu ne peux pas faire, utilise handoff_to_human et dis qu'un conseiller va répondre."""
 
@@ -174,6 +180,33 @@ def build_tools(sender_id: str):
             return {"error": "pointure invalide"}
         return {"product_id": product_id, "size": size, "quantity_in_stock": qty}
 
+    def send_product_photo(product_id: str) -> dict:
+        """Envoie au client Instagram la photo catalogue du produit dont la référence est exacte.
+        Utilise d'abord search_products pour obtenir cette référence. Retourne une erreur si
+        aucune photo n'est disponible ou si Instagram refuse l'envoi."""
+        print("OUTIL send_product_photo :", product_id)
+        photo = db.get_product_image(product_id)
+        if not photo or not photo.get("image_data"):
+            return {"status": "error", "reason": "aucune photo enregistrée pour ce produit"}
+        image_url = "{}/product-images/{}".format(PUBLIC_BASE_URL, quote(str(product_id), safe=""))
+        payload = {
+            "recipient": {"id": sender_id},
+            "message": {"attachment": {"type": "image", "payload": {
+                "url": image_url, "is_reusable": False
+            }}}
+        }
+        try:
+            with httpx.Client(timeout=httpx.Timeout(25, connect=10)) as client:
+                response = client.post(GRAPH_URL, headers={"Authorization": f"Bearer {IG_TOKEN}"},
+                                       json=payload)
+            if response.status_code != 200:
+                print("ENVOI PHOTO INSTAGRAM :", response.status_code, response.text[:300])
+                return {"status": "error", "reason": "Instagram a refusé l'envoi de la photo"}
+            return {"status": "ok", "message": "photo envoyée"}
+        except Exception as e:
+            print("ERREUR ENVOI PHOTO INSTAGRAM :", type(e).__name__, str(e)[:200])
+            return {"status": "error", "reason": "envoi de la photo impossible"}
+
     def create_order(product_id: str, size: int, quantity: int, customer_name: str,
                      phone: str, address: str, payment_method: str) -> dict:
         """Enregistre la commande. À appeler SEULEMENT après le récapitulatif et le
@@ -226,6 +259,7 @@ def build_tools(sender_id: str):
         return {"status": "ok"}
 
     return [search_products, check_stock, create_order, handoff_to_human]
+    return [search_products, check_stock, send_product_photo, create_order, handoff_to_human]
 
 
 # ---------- Instagram ----------
@@ -383,6 +417,19 @@ async def reply_with_ai(sender_id: str, text: str, image_url: Optional[str] = No
 
 
 # ---------- Webhook ----------
+@app.get("/product-images/{ref}")
+async def public_product_image(ref: str):
+    """Photo de catalogue publique, nécessaire pour que les serveurs Meta la téléchargent."""
+    photo = db.get_product_image(ref)
+    if not photo or not photo.get("image_data"):
+        raise HTTPException(status_code=404, detail="Image introuvable")
+    return Response(
+        content=bytes(photo["image_data"]),
+        media_type=photo.get("image_mime") or "image/jpeg",
+        headers={"Cache-Control": "public, max-age=3600"},
+    )
+
+
 @app.get("/webhook")
 async def verify(request: Request):
     p = request.query_params
