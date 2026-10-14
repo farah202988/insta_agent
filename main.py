@@ -524,6 +524,21 @@ async def send_private_comment_reply(comment_id: str, text: str) -> bool:
         return False
 
 
+async def send_public_comment_reply(comment_id: str, text: str) -> bool:
+    """Ajoute une courte réponse publique au commentaire après le DM."""
+    url = "https://graph.instagram.com/v26.0/{}/replies".format(quote(str(comment_id), safe=""))
+    try:
+        async with httpx.AsyncClient(timeout=httpx.Timeout(20, connect=8)) as client:
+            response = await client.post(url,
+                headers={"Authorization": "Bearer {}".format(IG_TOKEN)},
+                data={"message": text})
+        print("RÉPONSE PUBLIQUE COMMENT INSTAGRAM :", response.status_code, response.text[:400])
+        return response.status_code == 200
+    except Exception as e:
+        print("ERREUR RÉPONSE PUBLIQUE COMMENT :", type(e).__name__, str(e)[:200])
+        return False
+
+
 async def reply_to_comment(comment_id: str, sender_id: str, text: str, media_id: str):
     """Répond en privé aux commentaires liés au prix ou à la commande."""
     if not comment_id or not is_product_comment(text):
@@ -561,7 +576,9 @@ async def reply_to_comment(comment_id: str, sender_id: str, text: str, media_id:
     except Exception as e:
         print("ERREUR DÉDUPLICATION COMMENTAIRE :", str(e)[:200])
         return
-    await send_private_comment_reply(comment_id, answer[:1000])
+    private_sent = await send_private_comment_reply(comment_id, answer[:1000])
+    if private_sent:
+        await send_public_comment_reply(comment_id, "Vérifiez vos messages privés 📩")
 
 
 @app.api_route("/product-images/{ref}.jpg", methods=["GET", "HEAD"])
