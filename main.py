@@ -431,7 +431,15 @@ async def receive(request: Request, background_tasks: BackgroundTasks):
             if (not text and not image_url) or msg.get("is_echo") or sender == my_id:
                 continue
 
-            print("De :", sender, "| Texte :", text or "[image]", "| Image :", bool(image_url))
+            print("Message entrant | Texte :", bool(text), "| Image :", bool(image_url))
+            try:
+                if not db.allow_incoming_message(sender, limit=20):
+                    print("LIMITE ANTI-SPAM ATTEINTE")
+                    continue
+            except Exception as e:
+                # La base étant indisponible, on ne consomme pas le quota Gemini sans contrôle.
+                print("ERREUR CONTRÔLE ANTI-SPAM :", str(e)[:200])
+                continue
             background_tasks.add_task(reply_with_ai, sender, text or "", image_url)
 
     return {"status": "ok"}

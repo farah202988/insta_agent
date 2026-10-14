@@ -65,6 +65,10 @@ def init_db():
             content TEXT NOT NULL,
             created_at TIMESTAMPTZ NOT NULL DEFAULT NOW())""")
         c.execute("CREATE INDEX IF NOT EXISTS conversation_messages_user_id_idx ON conversation_messages (instagram_id, id DESC)")
+        c.execute("""CREATE TABLE IF NOT EXISTS message_rate_limits (
+            instagram_id TEXT PRIMARY KEY,
+            window_start TIMESTAMPTZ NOT NULL,
+            message_count INTEGER NOT NULL DEFAULT 0)""")
         c.execute("ALTER TABLE products ADD COLUMN IF NOT EXISTS image_data BYTEA")
         c.execute("ALTER TABLE products ADD COLUMN IF NOT EXISTS image_mime TEXT")
         # Nettoyage au démarrage : les messages expirés ne restent pas dans la base.
@@ -254,6 +258,25 @@ def add_conversation_message(instagram_id, role, content):
         c.execute("""DELETE FROM conversation_messages WHERE instagram_id = %s AND id NOT IN (
             SELECT id FROM conversation_messages WHERE instagram_id = %s
             ORDER BY id DESC LIMIT 20)""", (str(instagram_id), str(instagram_id)))
+
+
+def allow_incoming_message(instagram_id, limit=20):
+    """Autorise au plus `limit` messages par compte Instagram sur une heure."""
+    limit = max(1, int(limit))
+    instagram_id = str(instagram_id)
+    with conn() as c:
+        c.execute("DELETE FROM message_rate_limits WHERE window_start < NOW() - INTERVAL '2 hours'")
+        row = c.execute("""INSERT INTO message_rate_limits
+            (instagram_id, window_start, message_count) VALUES (%s, NOW(), 1)
+            ON CONFLICT (instagram_id) DO UPDATE SET
+                window_start = CASE
+                    WHEN message_rate_limits.window_start <= NOW() - INTERVAL '1 hour' THEN NOW()
+                    ELSE message_rate_limits.window_start END,
+                message_count = CASE
+                    WHEN message_rate_limits.window_start <= NOW() - INTERVAL '1 hour' THEN 1
+                    ELSE LEAST(%s + 1, message_rate_limits.message_count + 1) END
+            RETURNING message_count""", (instagram_id, limit)).fetchone()
+    return row["message_count"] <= limit
 
 
 def counts():
