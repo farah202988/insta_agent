@@ -429,6 +429,7 @@ async def public_product_image(ref: str):
     photo = db.get_product_image(ref)
     if not photo or not photo.get("image_data"):
         raise HTTPException(status_code=404, detail="Image introuvable")
+    print("PHOTO SERVIE :", ref, photo["image_mime"], len(photo["image_data"]))
     return Response(
         content=bytes(photo["image_data"]),
         media_type=photo.get("image_mime") or "image/jpeg",
