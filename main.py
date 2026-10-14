@@ -6,6 +6,8 @@ import threading
 import time
 from typing import Optional
 from urllib.parse import quote
+from io import BytesIO
+from PIL import Image
 
 import httpx
 from dotenv import load_dotenv
@@ -188,18 +190,10 @@ def build_tools(sender_id: str):
         photo = db.get_product_image(product_id)
         if not photo or not photo.get("image_data"):
             return {"status": "error", "reason": "aucune photo enregistrée pour ce produit"}
-        image_url = "{}/product-images/{}".format(PUBLIC_BASE_URL, quote(str(product_id), safe=""))
+        image_url = "{}/product-images/{}.jpg".format(PUBLIC_BASE_URL, quote(str(product_id), safe=""))
         payload = {
             "recipient": {"id": sender_id},
-            "message": {
-                "attachment": {
-                    "type": "image",
-                    "payload": {
-                        "url": image_url,
-                        "is_reusable": False
-                    }
-                }
-            }
+            "message": {"attachment": {"type": "image", "payload": {"url": image_url}}}
         }
         try:
             with httpx.Client(timeout=httpx.Timeout(25, connect=10)) as client:
@@ -422,19 +416,23 @@ async def reply_with_ai(sender_id: str, text: str, image_url: Optional[str] = No
         t_ai - t_start, t_answer - t_ai, t_end - t_answer, t_end - t_start))
 
 
-# ---------- Webhook ----------
-@app.get("/product-images/{ref}")
+@app.api_route("/product-images/{ref}.jpg", methods=["GET", "HEAD"])
 async def public_product_image(ref: str):
-    """Photo de catalogue publique, nécessaire pour que les serveurs Meta la téléchargent."""
+    """Photo de catalogue publique, convertie en JPEG pour que Meta puisse la télécharger."""
     photo = db.get_product_image(ref)
     if not photo or not photo.get("image_data"):
         raise HTTPException(status_code=404, detail="Image introuvable")
-    print("PHOTO SERVIE :", ref, photo["image_mime"], len(photo["image_data"]))
-    return Response(
-        content=bytes(photo["image_data"]),
-        media_type=photo.get("image_mime") or "image/jpeg",
-        headers={"Cache-Control": "public, max-age=3600"},
-    )
+    print("PHOTO DEMANDÉE :", ref, photo["image_mime"], len(photo["image_data"]))
+    try:
+        img = Image.open(BytesIO(bytes(photo["image_data"]))).convert("RGB")
+        img.thumbnail((1080, 1080))
+        buf = BytesIO()
+        img.save(buf, "JPEG", quality=85)
+    except Exception as e:
+        print("ERREUR CONVERSION IMAGE :", ref, type(e).__name__, str(e)[:200])
+        raise HTTPException(status_code=415, detail="Format d'image non supporté")
+    return Response(content=buf.getvalue(), media_type="image/jpeg",
+                    headers={"Cache-Control": "public, max-age=3600"})
 
 
 @app.get("/webhook")
