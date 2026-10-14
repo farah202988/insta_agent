@@ -61,10 +61,17 @@ Règles absolues :
   un modèle. Ne présente pas deux produits comme le même modèle uniquement parce qu'ils
   ont la même couleur ou la même catégorie.
 - Les prix sont en dinars tunisiens (TND). Paiement à la livraison.
-- Pour commander, il te faut : le modèle (id produit), la pointure, la quantité,
-  le nom, le téléphone, l'adresse. Demande ce qui manque, une ou deux choses à la fois.
-- Avant d'appeler create_order, fais un récapitulatif (produit, pointure, quantité,
-  prix total, nom, téléphone, adresse) et attends un "oui" explicite du client.
+- Quand un client veut commander, appelle d'abord get_customer_profile.
+  Si une fiche existe, présente son nom, son téléphone et son adresse, puis demande
+  s'il veut les réutiliser ou modifier un ou plusieurs éléments. Ne réutilise jamais
+  ces coordonnées sans confirmation explicite dans la conversation en cours.
+  Si le client demande un changement, remplace uniquement les champs qu'il a corrigés.
+  S'il n'existe aucune fiche, demande le nom complet, le téléphone et l'adresse.
+- Avant d'appeler create_order, récapitule le produit, la pointure, la quantité,
+  le prix total, le nom complet, le téléphone et l'adresse finale, puis attends un
+  "oui" explicite confirmant ces détails. Après une commande enregistrée avec succès,
+  indique brièvement que les coordonnées ont été sauvegardées pour faciliter la prochaine
+  commande et que le client peut les modifier à tout moment.
 - Si le produit ou la pointure n'est pas disponible, propose une alternative du catalogue.
 - Si le client demande une photo, appelle search_products, puis APPELLE send_product_photo
   avec l'id du produit si has_photo est vrai. Ne dis jamais que tu n'as pas de photo sans
@@ -197,6 +204,19 @@ def build_tools(sender_id: str, pending_photos: list):
             pending_photos.append(product_id)
         return {"status": "ok", "message": "la photo est envoyée au client"}
 
+    def get_customer_profile() -> dict:
+        """Lit la fiche de coordonnées enregistrée après une commande précédente.
+        À appeler quand le client commence une nouvelle commande."""
+        try:
+            profile = db.get_customer_profile(sender_id)
+        except Exception as e:
+            print("ERREUR LECTURE FICHE CLIENT :", str(e)[:180])
+            return {"found": False, "error": "coordonnées non accessibles"}
+        if not profile:
+            return {"found": False}
+        return {"found": True, "full_name": profile["full_name"],
+                "phone": profile["phone"], "address": profile["address"]}
+
     def create_order(product_id: str, size: int, quantity: int, customer_name: str,
                      phone: str, address: str, payment_method: str) -> dict:
         """Enregistre la commande. À appeler SEULEMENT après le récapitulatif et le
@@ -248,7 +268,8 @@ def build_tools(sender_id: str, pending_photos: list):
         ).start()
         return {"status": "ok"}
 
-    return [search_products, check_stock, send_product_photo, create_order, handoff_to_human]
+    return [search_products, check_stock, send_product_photo, get_customer_profile,
+            create_order, handoff_to_human]
 
 
 # ---------- Instagram ----------
