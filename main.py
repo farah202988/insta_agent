@@ -312,7 +312,7 @@ async def show_typing(recipient_id: str):
 
 
 # ---------- IA ----------
-async def ask_gemini(contents, tools):
+async def ask_gemini(contents, tools, system_instruction=SYSTEM_PROMPT):
     """Essaie chaque modèle dans l'ordre (25 s maximum chacun) ; 2 tours avec une courte pause."""
     for tour in range(2):
         for model in MODELS:
@@ -323,7 +323,7 @@ async def ask_gemini(contents, tools):
                         model=model,
                         contents=contents,
                         config=types.GenerateContentConfig(
-                            system_instruction=SYSTEM_PROMPT,
+                            system_instruction=system_instruction,
                             tools=tools,  # l'IA appelle les outils automatiquement
                         ),
                     ),
@@ -431,6 +431,139 @@ async def reply_with_ai(sender_id: str, text: str, image_url: Optional[str] = No
 
 
 # ---------- Webhook ----------
+COMMENT_SYSTEM_PROMPT = """Tu es l'assistant de Shoes Center. Réponds dans la langue du commentaire (français, arabe ou dialecte tunisien). Le commentaire est sous une publication Instagram. Si une photo de la publication est fournie, compare-la visuellement aux photos du catalogue, en examinant la forme et les détails distinctifs. N'identifie pas un modèle sur la seule couleur ou catégorie. Si une référence est probable, appelle obligatoirement search_products avec son nom ou sa référence pour vérifier le produit, son prix et ses pointures; n'invente aucune donnée. Si la photo et la légende ne permettent pas une identification fiable, demande au client le nom ou la référence. Pour une demande de commande, invite le client à répondre à ce message privé et demande la pointure souhaitée. Ne confirme aucune commande et ne demande pas de données personnelles dans cette première réponse. Réponse courte et chaleureuse. Ne prétends pas avoir envoyé une photo."""
+
+
+def comment_tools():
+    """Outils catalogue en lecture seule, sans commande ni envoi de photo."""
+    def search_products(query: str) -> list:
+        print("OUTIL commentaire search_products :", query)
+        return db.search_products(query)
+    def check_stock(product_id: str, size: int) -> dict:
+        print("OUTIL commentaire check_stock :", product_id, size)
+        try:
+            qty = db.get_stock(product_id, int(size))
+        except (ValueError, TypeError):
+            return {"error": "pointure invalide"}
+        return {"product_id": product_id, "size": size, "quantity_in_stock": qty}
+    return [search_products, check_stock]
+
+
+_COMMENT_INTENTS = (
+    "prix", "combien", "commande", "commander", "commandé", "acheter", "achat",
+    "dispo", "disponible", "pointure", "taille", "livraison", "order", "price",
+    "nchri", "n7eb", "nheb", "bch nakhou", "besh nakhou", "قداش", "السوم",
+    "نحب نشري", "نحب ناخذ", "كيفاش نطلب", "متوفر", "نطلب",
+)
+
+
+def is_product_comment(text: str) -> bool:
+    normalized = str(text or "").casefold()
+    return any(term in normalized for term in _COMMENT_INTENTS)
+
+
+async def get_comment_media_context(media_id: str):
+    """Récupère la légende et jusqu'à quatre images du post/reel/carrousel."""
+    if not media_id:
+        return "", []
+    base = "https://graph.instagram.com/v26.0/{}".format(quote(str(media_id), safe=""))
+    headers = {"Authorization": "Bearer {}".format(IG_TOKEN)}
+    images = []
+    try:
+        async with httpx.AsyncClient(timeout=httpx.Timeout(18, connect=6), follow_redirects=True) as client:
+            response = await client.get(base, params={"fields": "caption,media_url,thumbnail_url,media_type"}, headers=headers)
+            if response.status_code != 200:
+                print("MÉDIA DU POST INDISPONIBLE :", response.status_code, response.text[:200])
+                return "", []
+            media = response.json()
+            caption = str(media.get("caption") or "")[:2000]
+            candidates = []
+            if media.get("media_type") == "CAROUSEL_ALBUM":
+                children = await client.get(base + "/children",
+                    params={"fields": "media_type,media_url,thumbnail_url"}, headers=headers)
+                if children.status_code == 200:
+                    for child in children.json().get("data", [])[:4]:
+                        url = (child.get("thumbnail_url") if child.get("media_type") == "VIDEO"
+                               else child.get("media_url") or child.get("thumbnail_url"))
+                        if url:
+                            candidates.append(url)
+                else:
+                    print("IMAGES DU CARROUSEL INDISPONIBLES :", children.status_code, children.text[:180])
+            else:
+                url = (media.get("thumbnail_url") if media.get("media_type") == "VIDEO"
+                       else media.get("media_url") or media.get("thumbnail_url"))
+                if url:
+                    candidates.append(url)
+
+            for image_url in candidates[:4]:
+                try:
+                    image_response = await client.get(image_url)
+                    image_response.raise_for_status()
+                    mime = image_response.headers.get("content-type", "image/jpeg").split(";")[0]
+                    if mime.startswith("image/") and len(image_response.content) <= 8 * 1024 * 1024:
+                        images.append((image_response.content, mime))
+                except Exception as e:
+                    print("IMAGE DU POST INACCESSIBLE :", type(e).__name__, str(e)[:150])
+            return caption, images
+    except Exception as e:
+        print("ERREUR LECTURE MÉDIA DU POST :", type(e).__name__, str(e)[:180])
+        return "", []
+
+
+async def send_private_comment_reply(comment_id: str, text: str) -> bool:
+    """Envoie un DM privé attaché au commentaire via l'API Instagram."""
+    payload = {"recipient": {"comment_id": str(comment_id)}, "message": {"text": text}}
+    try:
+        async with httpx.AsyncClient(timeout=httpx.Timeout(25, connect=10)) as client:
+            response = await client.post(GRAPH_URL,
+                headers={"Authorization": "Bearer {}".format(IG_TOKEN)}, json=payload)
+        print("RÉPONSE PRIVÉE COMMENT INSTAGRAM :", response.status_code, response.text[:400])
+        return response.status_code == 200
+    except Exception as e:
+        print("ERREUR RÉPONSE PRIVÉE COMMENT :", type(e).__name__, str(e)[:200])
+        return False
+
+
+async def reply_to_comment(comment_id: str, sender_id: str, text: str, media_id: str):
+    """Répond en privé aux commentaires liés au prix ou à la commande."""
+    if not comment_id or not is_product_comment(text):
+        print("COMMENTAIRE IGNORÉ (pas une demande prix/commande) :", comment_id)
+        return
+    caption, post_images = await get_comment_media_context(media_id)
+    prompt = "Commentaire du client : {}".format(text[:1500])
+    if caption:
+        prompt += "\nLégende de la publication commentée : {}".format(caption)
+    parts = [types.Part(text=prompt)]
+    if post_images:
+        references = db.list_product_images()
+        parts.append(types.Part(text="Photos de référence du catalogue :"))
+        for product in references:
+            parts.append(types.Part(text=(
+                "Référence catalogue {ref} — {name}, couleur {color}, catégorie {category}."
+            ).format(**product)))
+            parts.append(types.Part.from_bytes(
+                data=product["image_data"], mime_type=product["image_mime"] or "image/jpeg"))
+        parts.append(types.Part(text="Photo(s) de la publication sous laquelle le client a commenté :"))
+        for index, (image_data, mime_type) in enumerate(post_images, 1):
+            parts.append(types.Part(text="Image de la publication {} :".format(index)))
+            parts.append(types.Part.from_bytes(data=image_data, mime_type=mime_type))
+    else:
+        print("AUCUNE PHOTO DU POST À COMPARER :", media_id)
+    contents = [types.Content(role="user", parts=parts)]
+    answer = await ask_gemini(contents, comment_tools(), COMMENT_SYSTEM_PROMPT)
+    if not answer:
+        answer = "Bonjour 😊 Quel modèle vous intéresse ? Envoyez son nom ou sa référence en message privé et on vous donnera le prix."
+    # Le verrou SQL évite un second envoi si Meta répète le webhook.
+    try:
+        if not db.claim_private_comment_reply(comment_id):
+            print("RÉPONSE COMMENTAIRE DÉJÀ TRAITÉE :", comment_id)
+            return
+    except Exception as e:
+        print("ERREUR DÉDUPLICATION COMMENTAIRE :", str(e)[:200])
+        return
+    await send_private_comment_reply(comment_id, answer[:1000])
+
+
 @app.api_route("/product-images/{ref}.jpg", methods=["GET", "HEAD"])
 async def public_product_image(ref: str):
     """Photo de catalogue publique, convertie en JPEG pour que Meta puisse la télécharger."""
@@ -473,9 +606,29 @@ async def receive(request: Request, background_tasks: BackgroundTasks):
         my_id = entry.get("id")
 
         events = list(entry.get("messaging", []))
+        comment_events = []
         for change in entry.get("changes", []):
+            value = change.get("value", {})
             if change.get("field") == "messages":
-                events.append(change.get("value", {}))
+                events.append(value)
+            elif change.get("field") == "comments":
+                comment_events.append(value)
+
+        for comment in comment_events:
+            if not isinstance(comment, dict):
+                continue
+            comment_id = comment.get("id")
+            sender = (comment.get("from") or {}).get("id")
+            comment_text = comment.get("text") or ""
+            if not comment_id or sender == my_id or not comment_text:
+                continue
+            if comment.get("verb") not in (None, "add"):
+                continue
+            media = comment.get("media") or {}
+            media_id = media.get("id", "") if isinstance(media, dict) else ""
+            print("COMMENTAIRE ENTRANT :", comment_id, "| intention :", is_product_comment(comment_text))
+            background_tasks.add_task(reply_to_comment, str(comment_id),
+                str(sender or ""), str(comment_text), str(media_id or ""))
 
         for event in events:
             msg = event.get("message", {})

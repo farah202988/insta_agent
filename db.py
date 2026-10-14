@@ -69,6 +69,8 @@ def init_db():
             instagram_id TEXT PRIMARY KEY,
             window_start TIMESTAMPTZ NOT NULL,
             message_count INTEGER NOT NULL DEFAULT 0)""")
+        c.execute("""CREATE TABLE IF NOT EXISTS private_comment_replies (
+            comment_id TEXT PRIMARY KEY, created_at TIMESTAMPTZ NOT NULL DEFAULT NOW())""")
         c.execute("ALTER TABLE products ADD COLUMN IF NOT EXISTS image_data BYTEA")
         c.execute("ALTER TABLE products ADD COLUMN IF NOT EXISTS image_mime TEXT")
         # Nettoyage au démarrage : les messages expirés ne restent pas dans la base.
@@ -281,6 +283,15 @@ def allow_incoming_message(instagram_id, limit=20):
                     ELSE LEAST(%s + 1, message_rate_limits.message_count + 1) END
             RETURNING message_count""", (instagram_id, limit)).fetchone()
     return row["message_count"] <= limit
+
+
+def claim_private_comment_reply(comment_id):
+    """Évite les réponses privées en double lors des retries de webhook Meta."""
+    with conn() as c:
+        row = c.execute("""INSERT INTO private_comment_replies (comment_id)
+            VALUES (%s) ON CONFLICT (comment_id) DO NOTHING RETURNING comment_id""",
+            (str(comment_id),)).fetchone()
+    return row is not None
 
 
 def counts():
