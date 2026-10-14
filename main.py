@@ -4,16 +4,16 @@ import hmac
 import os
 import threading
 import time
+from io import BytesIO
 from typing import Optional
 from urllib.parse import quote
-from io import BytesIO
-from PIL import Image
 
 import httpx
 from dotenv import load_dotenv
 from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, Request, Response
 from google import genai
 from google.genai import types
+from PIL import Image
 
 load_dotenv()
 
@@ -69,7 +69,8 @@ Règles absolues :
 - Si le client demande une photo, appelle search_products, puis APPELLE send_product_photo
   avec l'id du produit si has_photo est vrai. Ne dis jamais que tu n'as pas de photo sans
   avoir appelé send_product_photo. Si has_photo est faux, dis simplement qu'aucune photo
-  n'est disponible pour ce modèle.
+  n'est disponible pour ce modèle. Quand send_product_photo répond ok, dis simplement au
+  client que tu lui envoies la photo (une phrase courte).
 - Si le client est mécontent, demande un remboursement, un retour, ou quelque chose
   que tu ne peux pas faire, utilise handoff_to_human et dis qu'un conseiller va répondre."""
 
@@ -163,13 +164,16 @@ if _dashboard_auth is not None:
 
 
 # ---------- Outils donnés à l'IA ----------
-def build_tools(sender_id: str):
-    """Crée les outils liés à ce client (pour savoir qui commande)."""
+def build_tools(sender_id: str, pending_photos: list):
+    """Crée les outils liés à ce client (pour savoir qui commande).
+    pending_photos : liste remplie par send_product_photo ; les photos sont envoyées
+    APRÈS la réponse de l'IA (voir reply_with_ai), pour ne pas bloquer le serveur."""
 
     def search_products(query: str) -> list:
         """Cherche des chaussures dans le catalogue. query : mots-clés en français
         (modèle, marque, couleur, type comme basket ou mocassin). Retourne les produits
-        avec leur id, prix en TND et les pointures disponibles."""
+        avec leur id, prix en TND, les pointures disponibles et has_photo (une photo
+        catalogue existe)."""
         print("OUTIL search_products :", query)
         return db.search_products(query)
 
@@ -184,28 +188,14 @@ def build_tools(sender_id: str):
 
     def send_product_photo(product_id: str) -> dict:
         """Envoie au client Instagram la photo catalogue du produit dont la référence est exacte.
-        Utilise d'abord search_products pour obtenir cette référence. Retourne une erreur si
-        aucune photo n'est disponible ou si Instagram refuse l'envoi."""
+        Utilise d'abord search_products pour obtenir cette référence (id)."""
         print("OUTIL send_product_photo :", product_id)
         photo = db.get_product_image(product_id)
         if not photo or not photo.get("image_data"):
             return {"status": "error", "reason": "aucune photo enregistrée pour ce produit"}
-        image_url = "{}/product-images/{}.jpg".format(PUBLIC_BASE_URL, quote(str(product_id), safe=""))
-        payload = {
-            "recipient": {"id": sender_id},
-            "message": {"attachment": {"type": "image", "payload": {"url": image_url}}}
-        }
-        try:
-            with httpx.Client(timeout=httpx.Timeout(25, connect=10)) as client:
-                response = client.post(GRAPH_URL, headers={"Authorization": f"Bearer {IG_TOKEN}"},
-                                       json=payload)
-            if response.status_code != 200:
-                print("ENVOI PHOTO INSTAGRAM :", response.status_code, response.text[:300])
-                return {"status": "error", "reason": "Instagram a refusé l'envoi de la photo"}
-            return {"status": "ok", "message": "photo envoyée"}
-        except Exception as e:
-            print("ERREUR ENVOI PHOTO INSTAGRAM :", type(e).__name__, str(e)[:200])
-            return {"status": "error", "reason": "envoi de la photo impossible"}
+        if product_id not in pending_photos:
+            pending_photos.append(product_id)
+        return {"status": "ok", "message": "la photo est envoyée au client"}
 
     def create_order(product_id: str, size: int, quantity: int, customer_name: str,
                      phone: str, address: str, payment_method: str) -> dict:
@@ -259,7 +249,6 @@ def build_tools(sender_id: str):
         return {"status": "ok"}
 
     return [search_products, check_stock, send_product_photo, create_order, handoff_to_human]
-    
 
 
 # ---------- Instagram ----------
@@ -283,6 +272,25 @@ async def send_message(recipient_id: str, text: str):
                 if attempt < 2:
                     await asyncio.sleep(attempt + 1)
         print("ENVOI INSTAGRAM ABANDONNE après 3 tentatives")
+
+
+async def send_photo(recipient_id: str, product_id: str) -> bool:
+    """Envoie la photo catalogue d'un produit au client (appel asynchrone : le serveur reste
+    libre de répondre à Meta pendant que Meta télécharge l'image)."""
+    image_url = "{}/product-images/{}.jpg".format(PUBLIC_BASE_URL, quote(str(product_id), safe=""))
+    payload = {
+        "recipient": {"id": recipient_id},
+        "message": {"attachment": {"type": "image", "payload": {"url": image_url}}}
+    }
+    try:
+        async with httpx.AsyncClient(timeout=httpx.Timeout(30, connect=10)) as client:
+            r = await client.post(GRAPH_URL, headers={"Authorization": f"Bearer {IG_TOKEN}"},
+                                  json=payload)
+        print("ENVOI PHOTO INSTAGRAM :", r.status_code, r.text[:300])
+        return r.status_code == 200
+    except Exception as e:
+        print("ERREUR ENVOI PHOTO INSTAGRAM :", type(e).__name__, str(e)[:200])
+        return False
 
 
 async def send_sender_action(recipient_id: str, action: str):
@@ -396,11 +404,17 @@ async def reply_with_ai(sender_id: str, text: str, image_url: Optional[str] = No
             )
 
     t_ai = time.perf_counter()
-    answer = await ask_gemini(contents, build_tools(sender_id))
+    pending_photos = []  # rempli par l'outil send_product_photo
+    answer = await ask_gemini(contents, build_tools(sender_id, pending_photos))
     t_answer = time.perf_counter()
 
     if answer is None:
         answer = FALLBACK_TEXT
+    else:
+        # Les photos partent ici, après l'IA : le serveur est libre de répondre à Meta
+        for ref in pending_photos:
+            if not await send_photo(sender_id, ref):
+                answer += "\n(Désolé, la photo n'a pas pu être envoyée pour le moment.)"
     history.append({"role": "model", "text": answer})
     history = history[-20:]
     histories[sender_id] = history
@@ -416,6 +430,7 @@ async def reply_with_ai(sender_id: str, text: str, image_url: Optional[str] = No
         t_ai - t_start, t_answer - t_ai, t_end - t_answer, t_end - t_start))
 
 
+# ---------- Webhook ----------
 @app.api_route("/product-images/{ref}.jpg", methods=["GET", "HEAD"])
 async def public_product_image(ref: str):
     """Photo de catalogue publique, convertie en JPEG pour que Meta puisse la télécharger."""
