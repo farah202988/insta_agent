@@ -57,12 +57,15 @@ Règles absolues :
 - Pour tout prix, couleur, pointure ou stock, tu utilises TOUJOURS les outils
   (search_products, check_stock). Tu n'inventes jamais une information.
   Quand tu cherches, traduis la demande en mots-clés français (ex : "sodé" -> "noir").
-  Pour une question sur une pointure précise, identifie d'abord la référence exacte
-  (modèle ET couleur), puis appelle check_stock avec cette référence et cette pointure.
-  Si quantity_in_stock est supérieur à 0, la pointure est disponible : ne dis jamais
-  « rupture » ou « indisponible ». Dis qu'il en reste le nombre retourné.
-  Dis « rupture » uniquement si quantity_in_stock vaut 0. Si le produit exact est ambigu,
-  demande une précision au lieu de choisir une autre couleur ou une autre référence.
+  Ne révèle JAMAIS la quantité exacte en stock, même si un outil te la fournit.
+  Dis uniquement « disponible » ou « indisponible/épuisé ».
+  Identifie d'abord le modèle exact. Si plusieurs couleurs de ce modèle existent et que
+  le client n'en a pas précisé une, demande-lui la couleur avant de parler du stock ou
+  de continuer la commande. Ne choisis jamais la couleur à sa place.
+  Si la pointure n'est pas précisée, demande-la avant de confirmer la disponibilité.
+  Une fois la couleur et la pointure connues, appelle check_stock pour la bonne référence
+  et la bonne pointure. Si la quantité est positive, confirme seulement que c'est disponible;
+  dis « rupture » uniquement si la quantité vaut zéro. En cas d'ambiguïté, demande une précision.
 - Une catégorie générique (ex. « basket ») ou une couleur ne suffit jamais à identifier
   un modèle. Ne présente pas deux produits comme le même modèle uniquement parce qu'ils
   ont la même couleur ou la même catégorie.
@@ -73,9 +76,15 @@ Règles absolues :
   ces coordonnées sans confirmation explicite dans la conversation en cours.
   Si le client demande un changement, remplace uniquement les champs qu'il a corrigés.
   S'il n'existe aucune fiche, demande le nom complet, le téléphone et l'adresse.
-- Avant d'appeler create_order, récapitule le produit, la pointure, la quantité,
-  le prix total, le nom complet, le téléphone et l'adresse finale, puis attends un
-  "oui" explicite confirmant ces détails. Après une commande enregistrée avec succès,
+- Une fois la disponibilité et le prix communiqués, demande si le client souhaite
+  autre chose (autre article ou une autre pointure). S'il veut commander et a terminé
+  ses choix, demande s'il souhaite ajouter autre chose avant de finaliser.
+- À la fin du choix des articles, récupère ou demande les coordonnées. Envoie un seul
+  récapitulatif final contenant tous les articles, couleurs, pointures, quantités, prix
+  total, nom complet, téléphone et adresse, puis demande confirmation explicite.
+  Si le client change un élément, corrige le récapitulatif et redemande confirmation.
+  N'appelle create_order qu'après le « oui » explicite sur le récapitulatif final.
+  Après une commande enregistrée avec succès,
   indique brièvement que les coordonnées ont été sauvegardées pour faciliter la prochaine
   commande et que le client peut les modifier à tout moment.
 - Si le produit ou la pointure n'est pas disponible, propose une alternative du catalogue.
@@ -196,17 +205,19 @@ def build_tools(sender_id: str, pending_photos: list):
         return results
 
     def check_stock(product_id: str, size: int) -> dict:
-        """Vérifie si une pointure d'un produit est disponible. Retourne la quantité en stock."""
+        """Vérifie la disponibilité d'une pointure sans exposer le nombre d'articles."""
         print("OUTIL check_stock :", product_id, size)
         try:
             normalized_size = int(size)
             qty = db.get_stock(product_id, normalized_size)
         except (ValueError, TypeError):
             return {"error": "pointure invalide"}
-        result = {"product_id": str(product_id), "size": normalized_size,
-                  "quantity_in_stock": int(qty)}
-        print("RÉSULTAT check_stock :", result)
-        return result
+        available = int(qty) > 0
+        # Le chiffre exact reste dans les logs de gestion, jamais dans le contexte de l'IA.
+        print("RÉSULTAT check_stock :", {"product_id": str(product_id),
+              "size": normalized_size, "quantité réelle": int(qty)})
+        return {"product_id": str(product_id), "size": normalized_size,
+                "available": available}
 
     def send_product_photo(product_id: str) -> dict:
         """Envoie au client Instagram la photo catalogue du produit dont la référence est exacte.
@@ -253,6 +264,8 @@ def build_tools(sender_id: str, pending_photos: list):
             except Exception as e:
                 print("ERREUR BASE :", e)
                 return {"status": "error", "reason": "enregistrement impossible"}
+            if result.get("status") == "error" and result.get("reason") == "stock insuffisant":
+                result = {"status": "error", "reason": "stock insuffisant pour cette pointure"}
             if result.get("status") == "ok":
                 _recent_orders[key] = (time.time(), result)
         if result.get("status") == "ok":
@@ -481,7 +494,8 @@ def comment_tools():
             qty = db.get_stock(product_id, int(size))
         except (ValueError, TypeError):
             return {"error": "pointure invalide"}
-        return {"product_id": product_id, "size": size, "quantity_in_stock": qty}
+        print("RÉSULTAT check_stock commentaire :", product_id, size, "quantité réelle", qty)
+        return {"product_id": product_id, "size": size, "available": int(qty) > 0}
     return [search_products, check_stock]
 
 
