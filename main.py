@@ -191,7 +191,15 @@ def build_tools(sender_id: str):
         image_url = "{}/product-images/{}".format(PUBLIC_BASE_URL, quote(str(product_id), safe=""))
         payload = {
             "recipient": {"id": sender_id},
-            "message": {"attachment": {"type": "image", "payload": {"url": image_url}}}
+            "message": {
+                "attachment": {
+                    "type": "image",
+                    "payload": {
+                        "url": image_url,
+                        "is_reusable": False
+                    }
+                }
+            }
         }
         try:
             with httpx.Client(timeout=httpx.Timeout(25, connect=10)) as client:
