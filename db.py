@@ -93,7 +93,8 @@ def _size_key(size):
 
 def list_products():
     with conn() as c:
-        rows = c.execute("SELECT id, ref, name, category, color, size, price, stock FROM products").fetchall()
+        rows = c.execute("""SELECT id, ref, name, category, color, size, price, stock,
+            (image_data IS NOT NULL) AS has_photo FROM products""").fetchall()
     rows.sort(key=lambda r: (r["name"].lower(), r["color"].lower(), r["ref"], _size_key(r["size"])))
     return rows
 
@@ -127,7 +128,10 @@ def search_products(query):
             continue
         scores[r["ref"]] = score
         p = found.setdefault(r["ref"], {"id": r["ref"], "name": r["name"], "color": r["color"],
-                                       "price_tnd": r["price"], "sizes_available": []})
+                                       "price_tnd": r["price"], "sizes_available": [],
+                                       "has_photo": False})
+        if r["has_photo"]:
+            p["has_photo"] = True
         if r["stock"] > 0:
             p["sizes_available"].append(r["size"])
     best = max(scores.values()) if scores else 0

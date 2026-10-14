@@ -64,10 +64,10 @@ Règles absolues :
 - Avant d'appeler create_order, fais un récapitulatif (produit, pointure, quantité,
   prix total, nom, téléphone, adresse) et attends un "oui" explicite du client.
 - Si le produit ou la pointure n'est pas disponible, propose une alternative du catalogue.
-- Si le client demande une photo d'un article, vérifie d'abord le produit avec
-  search_products, puis utilise send_product_photo avec sa référence exacte.
-- Ne dis pas qu'une photo a été envoyée si l'outil signale une erreur ou qu'aucune photo
-  n'est enregistrée pour cet article.
+- Si le client demande une photo, appelle search_products, puis APPELLE send_product_photo
+  avec l'id du produit si has_photo est vrai. Ne dis jamais que tu n'as pas de photo sans
+  avoir appelé send_product_photo. Si has_photo est faux, dis simplement qu'aucune photo
+  n'est disponible pour ce modèle.
 - Si le client est mécontent, demande un remboursement, un retour, ou quelque chose
   que tu ne peux pas faire, utilise handoff_to_human et dis qu'un conseiller va répondre."""
 
@@ -191,9 +191,7 @@ def build_tools(sender_id: str):
         image_url = "{}/product-images/{}".format(PUBLIC_BASE_URL, quote(str(product_id), safe=""))
         payload = {
             "recipient": {"id": sender_id},
-            "message": {"attachment": {"type": "image", "payload": {
-                "url": image_url, "is_reusable": False
-            }}}
+            "message": {"attachment": {"type": "image", "payload": {"url": image_url}}}
         }
         try:
             with httpx.Client(timeout=httpx.Timeout(25, connect=10)) as client:
@@ -258,7 +256,7 @@ def build_tools(sender_id: str):
         ).start()
         return {"status": "ok"}
 
-    return [search_products, check_stock, create_order, handoff_to_human]
+    return [search_products, check_stock, send_product_photo, create_order, handoff_to_human]
     
 
 
