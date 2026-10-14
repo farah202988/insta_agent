@@ -57,6 +57,12 @@ Règles absolues :
 - Pour tout prix, couleur, pointure ou stock, tu utilises TOUJOURS les outils
   (search_products, check_stock). Tu n'inventes jamais une information.
   Quand tu cherches, traduis la demande en mots-clés français (ex : "sodé" -> "noir").
+  Pour une question sur une pointure précise, identifie d'abord la référence exacte
+  (modèle ET couleur), puis appelle check_stock avec cette référence et cette pointure.
+  Si quantity_in_stock est supérieur à 0, la pointure est disponible : ne dis jamais
+  « rupture » ou « indisponible ». Dis qu'il en reste le nombre retourné.
+  Dis « rupture » uniquement si quantity_in_stock vaut 0. Si le produit exact est ambigu,
+  demande une précision au lieu de choisir une autre couleur ou une autre référence.
 - Une catégorie générique (ex. « basket ») ou une couleur ne suffit jamais à identifier
   un modèle. Ne présente pas deux produits comme le même modèle uniquement parce qu'ils
   ont la même couleur ou la même catégorie.
@@ -182,16 +188,25 @@ def build_tools(sender_id: str, pending_photos: list):
         avec leur id, prix en TND, les pointures disponibles et has_photo (une photo
         catalogue existe)."""
         print("OUTIL search_products :", query)
-        return db.search_products(query)
+        results = db.search_products(query)
+        print("RÉSULTAT search_products :", [
+            {"id": p.get("id"), "name": p.get("name"), "color": p.get("color"),
+             "sizes_available": p.get("sizes_available")} for p in results
+        ])
+        return results
 
     def check_stock(product_id: str, size: int) -> dict:
         """Vérifie si une pointure d'un produit est disponible. Retourne la quantité en stock."""
         print("OUTIL check_stock :", product_id, size)
         try:
-            qty = db.get_stock(product_id, int(size))
+            normalized_size = int(size)
+            qty = db.get_stock(product_id, normalized_size)
         except (ValueError, TypeError):
             return {"error": "pointure invalide"}
-        return {"product_id": product_id, "size": size, "quantity_in_stock": qty}
+        result = {"product_id": str(product_id), "size": normalized_size,
+                  "quantity_in_stock": int(qty)}
+        print("RÉSULTAT check_stock :", result)
+        return result
 
     def send_product_photo(product_id: str) -> dict:
         """Envoie au client Instagram la photo catalogue du produit dont la référence est exacte.
