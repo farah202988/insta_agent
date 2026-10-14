@@ -212,7 +212,12 @@ def build_tools(sender_id: str):
         """Passe la conversation à un conseiller humain (client mécontent, remboursement,
         demande hors catalogue). Le bot ne répondra plus à ce client ensuite."""
         print("=== ALERTE HUMAIN :", sender_id, "| Raison :", reason, "===")
-        last = next((m["text"] for m in reversed(histories.get(sender_id, []))
+        try:
+            saved_history = db.get_conversation_history(sender_id, limit=20)
+        except Exception as e:
+            print("ERREUR LECTURE MÉMOIRE POUR HANDOFF :", str(e)[:200])
+            saved_history = histories.get(sender_id, [])
+        last = next((m["text"] for m in reversed(saved_history)
                      if m["role"] == "user"), "")
         db.add_handoff(sender_id, reason, last)
         threading.Thread(
@@ -304,12 +309,21 @@ async def reply_with_ai(sender_id: str, text: str, image_url: Optional[str] = No
     t_start = time.perf_counter()
     typing_task = asyncio.create_task(show_typing(sender_id))  # « vu » + « écrit… » tout de suite
 
-    history = histories.setdefault(sender_id, [])
     user_text = text or ("Le client a envoyé une image de produit." if image_url else "")
+    try:
+        history = db.get_conversation_history(sender_id, limit=19)
+    except Exception as e:
+        print("ERREUR LECTURE MÉMOIRE :", str(e)[:200])
+        history = histories.get(sender_id, [])
     history.append({"role": "user", "text": user_text})
-    history[:] = history[-20:]
+    history = history[-20:]
     while history and history[0]["role"] != "user":
         history.pop(0)
+    histories[sender_id] = history
+    try:
+        db.add_conversation_message(sender_id, "user", user_text)
+    except Exception as e:
+        print("ERREUR SAUVEGARDE MESSAGE CLIENT :", str(e)[:200])
 
     contents = [
         types.Content(role=m["role"], parts=[types.Part(text=m["text"])])
@@ -352,10 +366,14 @@ async def reply_with_ai(sender_id: str, text: str, image_url: Optional[str] = No
     t_answer = time.perf_counter()
 
     if answer is None:
-        history.pop()
         answer = FALLBACK_TEXT
-    else:
-        history.append({"role": "model", "text": answer})
+    history.append({"role": "model", "text": answer})
+    history = history[-20:]
+    histories[sender_id] = history
+    try:
+        db.add_conversation_message(sender_id, "model", answer)
+    except Exception as e:
+        print("ERREUR SAUVEGARDE RÉPONSE BOT :", str(e)[:200])
 
     await typing_task
     await send_message(sender_id, answer)
