@@ -79,8 +79,7 @@ def auth(request: Request):
     token = request.cookies.get(SESSION_COOKIE, "")
     user = _read_session(token) if token else None
     if not user:
-        path = "/register" if db.dashboard_user_count() == 0 else "/login"
-        raise HTTPException(status_code=303, headers={"Location": path})
+        raise HTTPException(status_code=303, headers={"Location": "/login"})
     return user
 
 
@@ -123,96 +122,66 @@ a{color:var(--pink);font-weight:650;text-decoration:none}.switch a:hover{text-de
 """
 
 
-def auth_page(mode, error=""):
+def auth_page(error=""):
     shop = esc(os.getenv("SHOP_NAME", "Shoes Center"))
-    register = mode == "register"
-    title = "Créer le compte propriétaire" if register else "Ravi de vous revoir"
-    subtitle = ("Configurez votre accès sécurisé au tableau de bord." if register
-                else "Connectez-vous pour gérer vos commandes et votre stock.")
     error_html = '<div class="error">{}</div>'.format(esc(error)) if error else ""
-    if register:
-        fields = """<label for="username">Nom d’utilisateur</label>
-<input id="username" name="username" autocomplete="username" required minlength="3" maxlength="40">
-<label for="password">Mot de passe</label>
-<input id="password" name="password" type="password" autocomplete="new-password" required minlength="12">
-<label for="confirm">Confirmer le mot de passe</label>
-<input id="confirm" name="confirm" type="password" autocomplete="new-password" required minlength="12">
-<button type="submit">Créer mon compte</button>
-<p class="note">Le mot de passe doit contenir au moins 12 caractères. L’inscription publique se désactive après la création de ce compte.</p>"""
-        switch = '<div class="switch">Vous avez déjà un compte ? <a href="/login">Se connecter</a></div>'
-        action = "/register"
-    else:
-        fields = """<label for="username">Nom d’utilisateur</label>
+    fields = """<label for="username">Nom d’utilisateur</label>
 <input id="username" name="username" autocomplete="username" required>
 <label for="password">Mot de passe</label>
 <input id="password" name="password" type="password" autocomplete="current-password" required>
 <button type="submit">Se connecter</button>"""
-        switch = ('<div class="switch"><a href="/register">Créer le premier compte</a></div>'
-                  if db.dashboard_user_count() == 0 else "")
-        action = "/login"
     return """<!doctype html><html lang="fr"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1"><title>{title} · {shop}</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>Connexion · {shop}</title>
 <style>{css}</style></head><body><div class="layout">
 <section class="brand-panel"><div class="logo"><span class="logo-mark">SC</span>{shop}</div>
 <div class="pitch"><h1>La gestion de votre boutique, en toute simplicité.</h1>
 <p>Retrouvez vos commandes et votre stock au même endroit.</p></div>
 <div class="panel-foot">Un espace réservé à l’équipe de la boutique.</div></section>
-<section class="form-panel"><h2>{title}</h2><p class="sub">{subtitle}</p>{error}
-<form method="post" action="{action}">{fields}</form>{switch}</section>
-</div></body></html>""".format(title=esc(title), shop=shop, css=AUTH_CSS, subtitle=esc(subtitle),
-           error=error_html, action=action, fields=fields, switch=switch)
+<section class="form-panel"><h2>Connexion</h2><p class="sub">Connectez-vous pour gérer vos commandes et votre stock.</p>{error}
+<form method="post" action="/login">{fields}</form></section>
+</div></body></html>""".format(shop=shop, css=AUTH_CSS, error=error_html, fields=fields)
 
 
 @auth_router.get("/login", response_class=HTMLResponse)
 def login_page():
-    if db.dashboard_user_count() == 0:
-        return RedirectResponse("/register", status_code=303)
-    return HTMLResponse(auth_page("login"))
+    return HTMLResponse(auth_page())
 
 
 @auth_router.post("/login", response_class=HTMLResponse)
 def login(request: Request, username: str = Form(...), password: str = Form(...)):
     if not _same_origin(request):
         raise HTTPException(status_code=403, detail="Origine invalide")
-    user = db.get_dashboard_user(username)
-    if not user or not _password_matches(password, user["password_hash"]):
-        return HTMLResponse(auth_page("login", "Nom d’utilisateur ou mot de passe incorrect."),
-                            status_code=401)
-    response = RedirectResponse("/dashboard/orders", status_code=303)
-    _set_session(response, request, user["id"])
-    return response
-
-
-@auth_router.get("/register", response_class=HTMLResponse)
-def register_page():
-    if db.dashboard_user_count() > 0:
-        return RedirectResponse("/login", status_code=303)
-    return HTMLResponse(auth_page("register"))
-
-
-@auth_router.post("/register", response_class=HTMLResponse)
-def register(request: Request, username: str = Form(...), password: str = Form(...),
-             confirm: str = Form(...)):
-    if not _same_origin(request):
-        raise HTTPException(status_code=403, detail="Origine invalide")
     username = username.strip().lower()
-    valid_username = (3 <= len(username) <= 40 and
-                      username.replace("_", "").replace("-", "").isalnum())
-    if not valid_username:
-        return HTMLResponse(auth_page("register", "Choisissez un nom de 3 à 40 caractères (lettres, chiffres, _ ou -)."),
-                            status_code=400)
-    if len(password) < 12:
-        return HTMLResponse(auth_page("register", "Le mot de passe doit contenir au moins 12 caractères."),
-                            status_code=400)
-    if password != confirm:
-        return HTMLResponse(auth_page("register", "Les mots de passe ne correspondent pas."),
-                            status_code=400)
-    if not db.create_initial_dashboard_user(username, _hash_password(password)):
-        return RedirectResponse("/login", status_code=303)
     user = db.get_dashboard_user(username)
+
+    # Premier accès : seul le couple d’identifiants configuré par le propriétaire
+    # dans l’environnement peut initialiser le compte, sans formulaire public.
+    if user is None and db.dashboard_user_count() == 0:
+        configured_user = os.getenv("DASHBOARD_USER", "admin").strip().lower()
+        configured_password = os.getenv("DASHBOARD_PASSWORD", "")
+        if (configured_password and secrets.compare_digest(username, configured_user)
+                and secrets.compare_digest(password, configured_password)):
+            db.create_initial_dashboard_user(username, _hash_password(password))
+            user = db.get_dashboard_user(username)
+
+    if not user or not _password_matches(password, user["password_hash"]):
+        message = "Nom d’utilisateur ou mot de passe incorrect."
+        if db.dashboard_user_count() == 0 and not os.getenv("DASHBOARD_PASSWORD"):
+            message = "Le compte n’est pas encore configuré. Ajoutez DASHBOARD_USER et DASHBOARD_PASSWORD dans Render."
+        return HTMLResponse(auth_page(message), status_code=401)
     response = RedirectResponse("/dashboard/orders", status_code=303)
     _set_session(response, request, user["id"])
     return response
+
+
+@auth_router.get("/register")
+def register_page():
+    return RedirectResponse("/login", status_code=303)
+
+
+@auth_router.post("/register")
+def register_disabled():
+    return RedirectResponse("/login", status_code=303)
 
 
 @auth_router.post("/logout")
