@@ -93,6 +93,7 @@ STATUS_LABEL = {
 }
 
 AUTH_CSS = """
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 :root{--orange:#ff7a1a;--text:#f6f3ef;--muted:#9a9691;--line:#ffffff1a}
 *{box-sizing:border-box}body{margin:0;height:100vh;overflow:hidden;background:#080807;color:var(--text);
 font:15px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;display:grid;place-items:center;padding:20px}
@@ -113,8 +114,8 @@ border-radius:50%;left:50%;bottom:-340px;transform:translateX(-50%);box-shadow:0
 color:#ff9a3c;display:grid;place-items:center;font-size:.82rem;letter-spacing:-.05em}
 .product-tag{margin:40px 0 12px;padding:6px 10px;border:1px solid #ff9b243d;border-radius:99px;
 color:#ffc083;font-size:.68rem;font-weight:700;letter-spacing:.14em;width:max-content;position:relative;z-index:2}
-.pitch{position:relative;z-index:2;max-width:520px}.pitch h1{font-size:clamp(2.2rem,4vw,3.65rem);line-height:1.03;
-margin:0 0 18px;letter-spacing:-.055em;font-weight:720}.pitch h1 span{color:#ff9a42}
+.pitch{position:relative;z-index:2;max-width:520px}.pitch h1{font-family:"Press Start 2P",monospace;font-size:clamp(1.15rem,2vw,1.5rem);
+line-height:1.7;margin:0 0 18px;letter-spacing:0;font-weight:400}.pitch h1 span{color:#ff9a42}
 .pitch p{color:#aaa6a0;max-width:440px;font-size:1rem;margin:0}
 .visual{position:relative;z-index:2;display:flex;align-items:center;justify-content:center;flex:1;min-height:0}
 .mascot{width:min(240px,58%);max-height:min(240px,32vh);object-fit:contain;filter:drop-shadow(0 18px 35px #ff75172a)}
@@ -134,7 +135,7 @@ button:hover{filter:brightness(1.08);transform:translateY(-1px)}
 .form-foot{margin-top:24px;padding-top:14px;border-top:1px solid #ffffff12;color:#77736d;font-size:.75rem}
 @media(max-width:760px){body{height:auto;min-height:100svh;overflow:auto;padding:0}.layout{width:100%;height:auto;min-height:100svh;
 border:0;border-radius:0;grid-template-columns:1fr}.brand-panel{min-height:430px;padding:24px 28px;border-right:0;border-bottom:1px solid #ffffff12}
-.product-tag{margin-top:34px}.pitch h1{font-size:clamp(2.3rem,11vw,3.25rem)}.visual{min-height:165px}.mascot{width:175px;max-height:180px}
+.product-tag{margin-top:34px}.pitch h1{font-size:clamp(1.05rem,4.8vw,1.35rem);line-height:1.65}.visual{min-height:165px}.mascot{width:175px;max-height:180px}
 .form-panel{padding:34px 28px 40px}.secure{margin-bottom:20px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{transition:none!important}}
 """
