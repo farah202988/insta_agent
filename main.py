@@ -28,7 +28,13 @@ except ImportError:
 
 app = FastAPI()
 db.init_db()
+app.include_router(dashboard.auth_router)
 app.include_router(dashboard.router)
+
+
+@app.get("/")
+def root():
+    return Response(status_code=303, headers={"Location": "/dashboard"})
 
 # --- Clés (lues dans le fichier .env) ---
 APP_SECRET = os.getenv("IG_APP_SECRET")

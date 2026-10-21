@@ -1,28 +1,87 @@
 """Tableau de bord de la boutique : commandes, stock, conversations à reprendre."""
+import hashlib
+import hmac
 import os
 import secrets
+import time
 from typing import List
 from html import escape as esc
+from urllib.parse import urlsplit
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import HTMLResponse, RedirectResponse, Response
-from fastapi.security import HTTPBasic, HTTPBasicCredentials
 
 import db
 
-security = HTTPBasic()
+SESSION_COOKIE = "dashboard_session"
+SESSION_SECONDS = 60 * 60 * 24 * 7
+router = APIRouter(prefix="/dashboard")
+auth_router = APIRouter()
 
 
-def auth(credentials: HTTPBasicCredentials = Depends(security)):
-    """Protège le tableau de bord par identifiant + mot de passe (définis dans .env)."""
-    user = os.getenv("DASHBOARD_USER", "admin")
-    password = os.getenv("DASHBOARD_PASSWORD")
-    if not password:
-        raise HTTPException(status_code=503, detail="Ajoute DASHBOARD_PASSWORD dans le fichier .env")
-    ok_user = secrets.compare_digest(credentials.username.encode(), user.encode())
-    ok_pass = secrets.compare_digest(credentials.password.encode(), password.encode())
-    if not (ok_user and ok_pass):
-        raise HTTPException(status_code=401, headers={"WWW-Authenticate": "Basic"})
+def _session_secret():
+    secret = os.getenv("DASHBOARD_SESSION_SECRET") or os.getenv("APP_SECRET") or os.getenv("DATABASE_URL")
+    if not secret:
+        raise HTTPException(status_code=503, detail="Configure DASHBOARD_SESSION_SECRET dans l'environnement")
+    return secret.encode()
+
+
+def _hash_password(password):
+    salt = secrets.token_bytes(16)
+    digest = hashlib.scrypt(password.encode("utf-8"), salt=salt, n=2**14, r=8, p=1, dklen=64)
+    return "scrypt$" + salt.hex() + "$" + digest.hex()
+
+
+def _password_matches(password, stored):
+    try:
+        algorithm, salt_hex, digest_hex = stored.split("$", 2)
+        if algorithm != "scrypt":
+            return False
+        actual = hashlib.scrypt(password.encode("utf-8"), salt=bytes.fromhex(salt_hex),
+                                n=2**14, r=8, p=1, dklen=64)
+        return secrets.compare_digest(actual.hex(), digest_hex)
+    except (ValueError, TypeError):
+        return False
+
+
+def _same_origin(request):
+    origin = request.headers.get("origin")
+    return not origin or urlsplit(origin).netloc.lower() == request.headers.get("host", "").lower()
+
+
+def _make_session(user_id):
+    expires = int(time.time()) + SESSION_SECONDS
+    payload = "{}:{}".format(int(user_id), expires)
+    signature = hmac.new(_session_secret(), payload.encode(), hashlib.sha256).hexdigest()
+    return "{}:{}:{}".format(int(user_id), expires, signature)
+
+
+def _read_session(token):
+    try:
+        user_id, expires, signature = token.split(":", 2)
+        payload = "{}:{}".format(user_id, expires)
+        expected = hmac.new(_session_secret(), payload.encode(), hashlib.sha256).hexdigest()
+        if int(expires) < int(time.time()) or not hmac.compare_digest(signature, expected):
+            return None
+        return db.get_dashboard_user_by_id(int(user_id))
+    except (ValueError, TypeError):
+        return None
+
+
+def _set_session(response, request, user_id):
+    secure = request.url.scheme == "https" or request.headers.get("x-forwarded-proto") == "https"
+    response.set_cookie(SESSION_COOKIE, _make_session(user_id), max_age=SESSION_SECONDS,
+                        httponly=True, secure=secure, samesite="lax", path="/")
+
+
+def auth(request: Request):
+    """Protège le tableau de bord avec une session signée en cookie."""
+    token = request.cookies.get(SESSION_COOKIE, "")
+    user = _read_session(token) if token else None
+    if not user:
+        path = "/register" if db.dashboard_user_count() == 0 else "/login"
+        raise HTTPException(status_code=303, headers={"Location": path})
+    return user
 
 
 router = APIRouter(prefix="/dashboard", dependencies=[Depends(auth)])
@@ -33,6 +92,137 @@ STATUS_LABEL = {
     "livree": "Livrée",
     "annulee": "Annulée",
 }
+
+AUTH_CSS = """
+:root{--navy:#172238;--pink:#d41463;--ink:#202b3c;--muted:#728096;--line:#e5e9f0}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:#f4f6fa;color:var(--ink);
+font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;display:grid;place-items:center;padding:24px}
+.layout{width:min(980px,100%);min-height:600px;background:#fff;border-radius:24px;overflow:hidden;
+box-shadow:0 28px 90px #17223822;display:grid;grid-template-columns:1.05fr .95fr}
+.brand-panel{background:linear-gradient(145deg,#172238,#283a58 65%,#d41463);color:#fff;padding:52px 44px;
+display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden}
+.brand-panel:after{content:"";position:absolute;width:340px;height:340px;border:1px solid #ffffff22;
+border-radius:50%;right:-150px;bottom:-100px;box-shadow:0 0 0 35px #ffffff0b,0 0 0 75px #ffffff08}
+.logo{display:flex;align-items:center;gap:12px;font-weight:750;font-size:1.2rem;position:relative;z-index:1}
+.logo-mark{width:44px;height:44px;border-radius:14px;background:#fff;color:var(--pink);display:grid;place-items:center;font-weight:900}
+.pitch{position:relative;z-index:1}.pitch h1{font-size:2.35rem;line-height:1.12;margin:0 0 14px;letter-spacing:-.04em}
+.pitch p{color:#dce4f2;max-width:340px;margin:0}.panel-foot{font-size:.85rem;color:#c7d0df;position:relative;z-index:1}
+.form-panel{padding:64px 54px;display:flex;flex-direction:column;justify-content:center}
+.form-panel h2{font-size:1.8rem;letter-spacing:-.03em;margin:0 0 5px}.sub{color:var(--muted);margin:0 0 28px}
+label{display:block;font-size:.9rem;font-weight:650;margin:17px 0 7px}
+input{width:100%;padding:13px 14px;border:1px solid var(--line);border-radius:11px;font:inherit;outline:none}
+input:focus{border-color:var(--pink);box-shadow:0 0 0 4px #d4146318}
+button{width:100%;margin-top:22px;border:0;border-radius:11px;background:var(--pink);color:white;
+padding:14px;font:inherit;font-weight:700;cursor:pointer;box-shadow:0 8px 18px #d4146330}
+button:hover{background:#b80f53}.error{background:#fff0f2;border:1px solid #ffd0d8;color:#a31838;
+padding:11px 13px;border-radius:10px;margin:0 0 15px}.switch{margin-top:22px;color:var(--muted);text-align:center}
+a{color:var(--pink);font-weight:650;text-decoration:none}.switch a:hover{text-decoration:underline}
+.note{margin-top:20px;font-size:.82rem;color:var(--muted)}
+@media(max-width:720px){.layout{grid-template-columns:1fr;min-height:auto}.brand-panel{min-height:220px;padding:26px 28px}
+.pitch h1{font-size:1.65rem}.panel-foot{display:none}.form-panel{padding:34px 28px}}
+"""
+
+
+def auth_page(mode, error=""):
+    shop = esc(os.getenv("SHOP_NAME", "Shoes Center"))
+    register = mode == "register"
+    title = "Créer le compte propriétaire" if register else "Ravi de vous revoir"
+    subtitle = ("Configurez votre accès sécurisé au tableau de bord." if register
+                else "Connectez-vous pour gérer vos commandes et votre stock.")
+    error_html = '<div class="error">{}</div>'.format(esc(error)) if error else ""
+    if register:
+        fields = """<label for="username">Nom d’utilisateur</label>
+<input id="username" name="username" autocomplete="username" required minlength="3" maxlength="40">
+<label for="password">Mot de passe</label>
+<input id="password" name="password" type="password" autocomplete="new-password" required minlength="12">
+<label for="confirm">Confirmer le mot de passe</label>
+<input id="confirm" name="confirm" type="password" autocomplete="new-password" required minlength="12">
+<button type="submit">Créer mon compte</button>
+<p class="note">Le mot de passe doit contenir au moins 12 caractères. L’inscription publique se désactive après la création de ce compte.</p>"""
+        switch = '<div class="switch">Vous avez déjà un compte ? <a href="/login">Se connecter</a></div>'
+        action = "/register"
+    else:
+        fields = """<label for="username">Nom d’utilisateur</label>
+<input id="username" name="username" autocomplete="username" required>
+<label for="password">Mot de passe</label>
+<input id="password" name="password" type="password" autocomplete="current-password" required>
+<button type="submit">Se connecter</button>"""
+        switch = ('<div class="switch"><a href="/register">Créer le premier compte</a></div>'
+                  if db.dashboard_user_count() == 0 else "")
+        action = "/login"
+    return """<!doctype html><html lang="fr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>{title} · {shop}</title>
+<style>{css}</style></head><body><div class="layout">
+<section class="brand-panel"><div class="logo"><span class="logo-mark">SC</span>{shop}</div>
+<div class="pitch"><h1>La gestion de votre boutique, en toute simplicité.</h1>
+<p>Retrouvez vos commandes et votre stock au même endroit.</p></div>
+<div class="panel-foot">Un espace réservé à l’équipe de la boutique.</div></section>
+<section class="form-panel"><h2>{title}</h2><p class="sub">{subtitle}</p>{error}
+<form method="post" action="{action}">{fields}</form>{switch}</section>
+</div></body></html>""".format(title=esc(title), shop=shop, css=AUTH_CSS, subtitle=esc(subtitle),
+           error=error_html, action=action, fields=fields, switch=switch)
+
+
+@auth_router.get("/login", response_class=HTMLResponse)
+def login_page():
+    if db.dashboard_user_count() == 0:
+        return RedirectResponse("/register", status_code=303)
+    return HTMLResponse(auth_page("login"))
+
+
+@auth_router.post("/login", response_class=HTMLResponse)
+def login(request: Request, username: str = Form(...), password: str = Form(...)):
+    if not _same_origin(request):
+        raise HTTPException(status_code=403, detail="Origine invalide")
+    user = db.get_dashboard_user(username)
+    if not user or not _password_matches(password, user["password_hash"]):
+        return HTMLResponse(auth_page("login", "Nom d’utilisateur ou mot de passe incorrect."),
+                            status_code=401)
+    response = RedirectResponse("/dashboard/orders", status_code=303)
+    _set_session(response, request, user["id"])
+    return response
+
+
+@auth_router.get("/register", response_class=HTMLResponse)
+def register_page():
+    if db.dashboard_user_count() > 0:
+        return RedirectResponse("/login", status_code=303)
+    return HTMLResponse(auth_page("register"))
+
+
+@auth_router.post("/register", response_class=HTMLResponse)
+def register(request: Request, username: str = Form(...), password: str = Form(...),
+             confirm: str = Form(...)):
+    if not _same_origin(request):
+        raise HTTPException(status_code=403, detail="Origine invalide")
+    username = username.strip().lower()
+    valid_username = (3 <= len(username) <= 40 and
+                      username.replace("_", "").replace("-", "").isalnum())
+    if not valid_username:
+        return HTMLResponse(auth_page("register", "Choisissez un nom de 3 à 40 caractères (lettres, chiffres, _ ou -)."),
+                            status_code=400)
+    if len(password) < 12:
+        return HTMLResponse(auth_page("register", "Le mot de passe doit contenir au moins 12 caractères."),
+                            status_code=400)
+    if password != confirm:
+        return HTMLResponse(auth_page("register", "Les mots de passe ne correspondent pas."),
+                            status_code=400)
+    if not db.create_initial_dashboard_user(username, _hash_password(password)):
+        return RedirectResponse("/login", status_code=303)
+    user = db.get_dashboard_user(username)
+    response = RedirectResponse("/dashboard/orders", status_code=303)
+    _set_session(response, request, user["id"])
+    return response
+
+
+@auth_router.post("/logout")
+def logout(request: Request):
+    if not _same_origin(request):
+        raise HTTPException(status_code=403, detail="Origine invalide")
+    response = RedirectResponse("/login", status_code=303)
+    response.delete_cookie(SESSION_COOKIE, path="/")
+    return response
+
 
 CSS = """
 :root{--ink:#1E2A3B;--muted:#667085;--paper:#F4F5F7;--card:#fff;--line:#D9DDE3;
@@ -46,6 +236,7 @@ justify-content:space-between;gap:8px 24px;padding:10px 20px}
 .top nav{display:flex;gap:4px;flex-wrap:wrap}
 .top nav a{color:#CBD2DC;text-decoration:none;padding:8px 14px;border-radius:6px}
 .top nav a.on{background:#fff;color:var(--ink);font-weight:600}
+.logout{border:1px solid #526076;background:transparent;color:#fff;border-radius:6px;padding:8px 14px;font:inherit;cursor:pointer}
 .pill{display:inline-block;min-width:1.4em;padding:0 .45em;margin-left:.35em;border-radius:99px;
 background:var(--accent);color:#fff;font-size:.8rem;font-weight:700;text-align:center}
 main{max-width:920px;margin:0 auto;padding:20px}
@@ -126,7 +317,8 @@ def page(title, active, body):
 <body>
 <header class="top"><div class="brand">{shop}</div>
 <nav><a href="/dashboard/orders" class="{o}">Commandes{pill}</a>
-<a href="/dashboard/stock" class="{s}">Stock</a></nav></header>
+<a href="/dashboard/stock" class="{s}">Stock</a>
+<form method="post" action="/logout" style="display:inline;margin:0"><button type="submit" class="logout">Déconnexion</button></form></nav></header>
 <main>{body}</main></body></html>""".format(
         title=esc(title), shop=shop, css=CSS, body=body, pill=orders_pill,
         o="on" if active == "orders" else "", s="on" if active == "stock" else "",
