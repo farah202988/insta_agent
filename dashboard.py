@@ -94,12 +94,12 @@ STATUS_LABEL = {
 
 AUTH_CSS = """
 :root{--orange:#ff7a1a;--text:#f6f3ef;--muted:#9a9691;--line:#ffffff1a}
-*{box-sizing:border-box}body{margin:0;min-height:100vh;background:#080807;color:var(--text);
-font:15px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;display:grid;place-items:center;padding:24px}
-.layout{width:min(1180px,100%);min-height:min(740px,calc(100vh - 48px));border:1px solid #ffffff14;
+*{box-sizing:border-box}body{margin:0;height:100vh;overflow:hidden;background:#080807;color:var(--text);
+font:15px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;display:grid;place-items:center;padding:20px}
+.layout{width:min(1180px,100%);height:min(720px,calc(100vh - 40px));min-height:0;border:1px solid #ffffff14;
 border-radius:22px;overflow:hidden;background:#0d0d0c;box-shadow:0 32px 100px #000b;
 display:grid;grid-template-columns:1.12fr .88fr}
-.brand-panel{background-color:#0c0b09;background-image:linear-gradient(#ff9b2410 1px,transparent 1px),
+.brand-panel{min-height:0;background-color:#0c0b09;background-image:linear-gradient(#ff9b2410 1px,transparent 1px),
 linear-gradient(90deg,#ff9b2410 1px,transparent 1px),radial-gradient(ellipse at 54% 42%,#46200d55,transparent 55%);
 background-size:42px 42px,42px 42px,auto;color:#fff;padding:34px 42px;display:flex;flex-direction:column;
 position:relative;overflow:hidden;border-right:1px solid #ffffff12}
@@ -111,34 +111,34 @@ border-radius:50%;left:50%;bottom:-340px;transform:translateX(-50%);box-shadow:0
 .logo{display:flex;align-items:center;gap:11px;font-weight:750;font-size:1.05rem;position:relative;z-index:2}
 .logo-mark{width:36px;height:36px;border:1px solid #ff9b246b;border-radius:11px;background:#ff8a1a15;
 color:#ff9a3c;display:grid;place-items:center;font-size:.82rem;letter-spacing:-.05em}
-.product-tag{margin:72px 0 16px;padding:6px 10px;border:1px solid #ff9b243d;border-radius:99px;
+.product-tag{margin:40px 0 12px;padding:6px 10px;border:1px solid #ff9b243d;border-radius:99px;
 color:#ffc083;font-size:.68rem;font-weight:700;letter-spacing:.14em;width:max-content;position:relative;z-index:2}
-.pitch{position:relative;z-index:2;max-width:520px}.pitch h1{font-size:clamp(2.5rem,5vw,4.25rem);line-height:1.03;
+.pitch{position:relative;z-index:2;max-width:520px}.pitch h1{font-size:clamp(2.2rem,4vw,3.65rem);line-height:1.03;
 margin:0 0 18px;letter-spacing:-.055em;font-weight:720}.pitch h1 span{color:#ff9a42}
 .pitch p{color:#aaa6a0;max-width:440px;font-size:1rem;margin:0}
-.visual{position:relative;z-index:2;display:flex;align-items:center;justify-content:center;flex:1;min-height:260px}
-.mascot{width:min(290px,65%);max-height:330px;object-fit:contain;filter:drop-shadow(0 18px 35px #ff75172a)}
+.visual{position:relative;z-index:2;display:flex;align-items:center;justify-content:center;flex:1;min-height:0}
+.mascot{width:min(240px,58%);max-height:min(240px,32vh);object-fit:contain;filter:drop-shadow(0 18px 35px #ff75172a)}
 .node{position:absolute;display:grid;place-items:center;width:42px;height:42px;border:1px solid #ffffff18;
 border-radius:12px;background:#151412;color:#ffad66;font-weight:700;font-size:.8rem;box-shadow:0 0 24px #ff7a1a10}
 .node.one{left:7%;top:24%}.node.two{right:8%;top:36%}.node.three{left:17%;bottom:17%}.node.four{right:16%;bottom:14%}
 .panel-foot{font-size:.76rem;color:#77736d;position:relative;z-index:2;letter-spacing:.02em}
-.form-panel{padding:54px clamp(30px,5vw,70px);display:flex;flex-direction:column;justify-content:center;background:#10100f}
-.secure{display:flex;align-items:center;gap:8px;color:#aaa49c;font-size:.76rem;margin-bottom:42px}
+.form-panel{min-height:0;padding:38px clamp(30px,5vw,70px);display:flex;flex-direction:column;justify-content:center;background:#10100f}
+.secure{display:flex;align-items:center;gap:8px;color:#aaa49c;font-size:.76rem;margin-bottom:28px}
 .secure-dot{width:7px;height:7px;background:#62c995;border-radius:50%;box-shadow:0 0 12px #62c99588}
-.form-panel h2{font-size:1.9rem;letter-spacing:-.04em;margin:0 0 7px}.sub{color:var(--muted);margin:0 0 30px;font-size:.92rem}
-label{display:block;color:#e7e1d9;font-size:.82rem;font-weight:600;margin:18px 0 8px}
+.form-panel h2{font-size:1.9rem;letter-spacing:-.04em;margin:0 0 7px}.sub{color:var(--muted);margin:0 0 22px;font-size:.92rem}
+label{display:block;color:#e7e1d9;font-size:.82rem;font-weight:600;margin:13px 0 7px}
 input{width:100%;padding:13px 14px;border:1px solid #ffffff20;background:#0b0b0a;color:#fff;border-radius:9px;
 font:inherit;outline:none;transition:border-color .18s,box-shadow .18s}
 input:focus{border-color:var(--orange);box-shadow:0 0 0 3px #ff7a1a20}
-button{width:100%;margin-top:24px;border:0;border-radius:9px;background:linear-gradient(100deg,#ff8a24,#f06b12);
+button{width:100%;margin-top:19px;border:0;border-radius:9px;background:linear-gradient(100deg,#ff8a24,#f06b12);
 color:#1d1008;padding:13px;font:inherit;font-weight:750;cursor:pointer;box-shadow:0 8px 26px #ff7a1a22;transition:transform .18s,filter .18s}
 button:hover{filter:brightness(1.08);transform:translateY(-1px)}
 .error{background:#2c1710;border:1px solid #87401f;color:#ffb08a;padding:11px 13px;border-radius:9px;margin:0 0 15px}
-.form-foot{margin-top:32px;padding-top:18px;border-top:1px solid #ffffff12;color:#77736d;font-size:.75rem}
-@media(max-width:760px){body{padding:0}.layout{width:100%;min-height:100vh;border:0;border-radius:0;grid-template-columns:1fr}
-.brand-panel{min-height:500px;padding:26px 28px;border-right:0;border-bottom:1px solid #ffffff12}
-.product-tag{margin-top:42px}.pitch h1{font-size:clamp(2.3rem,11vw,3.25rem)}.visual{min-height:210px}.mascot{width:210px;max-height:235px}
-.node{transform:scale(.82)}.form-panel{padding:40px 28px 46px}.secure{margin-bottom:24px}}
+.form-foot{margin-top:24px;padding-top:14px;border-top:1px solid #ffffff12;color:#77736d;font-size:.75rem}
+@media(max-width:760px){body{height:auto;min-height:100svh;overflow:auto;padding:0}.layout{width:100%;height:auto;min-height:100svh;
+border:0;border-radius:0;grid-template-columns:1fr}.brand-panel{min-height:430px;padding:24px 28px;border-right:0;border-bottom:1px solid #ffffff12}
+.product-tag{margin-top:34px}.pitch h1{font-size:clamp(2.3rem,11vw,3.25rem)}.visual{min-height:165px}.mascot{width:175px;max-height:180px}
+.node{transform:scale(.82)}.form-panel{padding:34px 28px 40px}.secure{margin-bottom:20px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{transition:none!important}}
 """
 
