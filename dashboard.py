@@ -93,39 +93,57 @@ STATUS_LABEL = {
 }
 
 AUTH_CSS = """
-:root{--orange:#f97316;--ink:#202b3c;--muted:#728096;--line:#e5e9f0}
-*{box-sizing:border-box}body{margin:0;min-height:100vh;background:#fff8f1;color:var(--ink);
-font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;display:grid;place-items:center;padding:24px}
-.layout{width:min(980px,100%);min-height:600px;background:#fff;border-radius:24px;overflow:hidden;
-box-shadow:0 28px 90px #70320d20;display:grid;grid-template-columns:1.05fr .95fr}
-.brand-panel{background:linear-gradient(145deg,#261508,#51260d 62%,#c64a0b);color:#fff;padding:42px 44px;
-display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden}
-.brand-panel:after{content:"";position:absolute;width:340px;height:340px;border:1px solid #ffffff22;
-border-radius:50%;right:-150px;bottom:-100px;box-shadow:0 0 0 35px #ffffff0b,0 0 0 75px #ffffff08}
-.logo{display:flex;align-items:center;gap:12px;font-weight:750;font-size:1.2rem;position:relative;z-index:1}
-.logo-mark{width:44px;height:44px;border-radius:14px;background:#fff;color:var(--orange);display:grid;place-items:center;font-weight:900}
-.pitch{position:relative;z-index:1;margin-top:24px}.pitch h1{font-size:2.35rem;line-height:1.12;margin:0 0 14px;letter-spacing:-.04em}
-.pitch p{color:#ffe7d2;max-width:340px;margin:0}
-.mascot{display:block;width:min(240px,70%);height:auto;object-fit:contain;align-self:center;margin:4px auto 0;
-position:relative;z-index:1;filter:drop-shadow(0 18px 24px #150b0780)}
-.panel-foot{font-size:.85rem;color:#e7cbb6;position:relative;z-index:1}
-.form-panel{padding:64px 54px;display:flex;flex-direction:column;justify-content:center}
-.form-panel h2{font-size:1.8rem;letter-spacing:-.03em;margin:0 0 5px}.sub{color:var(--muted);margin:0 0 28px}
-label{display:block;font-size:.9rem;font-weight:650;margin:17px 0 7px}
-input{width:100%;padding:13px 14px;border:1px solid var(--line);border-radius:11px;font:inherit;outline:none}
-input:focus{border-color:var(--orange);box-shadow:0 0 0 4px #f973161c}
-button{width:100%;margin-top:22px;border:0;border-radius:11px;background:var(--orange);color:white;
-padding:14px;font:inherit;font-weight:700;cursor:pointer;box-shadow:0 8px 18px #f9731638}
-button:hover{background:#ea580c}.error{background:#fff4e8;border:1px solid #fed7aa;color:#9a3412;
-padding:11px 13px;border-radius:10px;margin:0 0 15px}
-.note{margin-top:20px;font-size:.82rem;color:var(--muted)}
-@media(max-width:720px){.layout{grid-template-columns:1fr;min-height:auto}.brand-panel{min-height:220px;padding:26px 28px}
-.pitch h1{font-size:1.65rem}.mascot{width:150px;margin-top:12px}.panel-foot{display:none}.form-panel{padding:34px 28px}}
+:root{--orange:#ff7a1a;--text:#f6f3ef;--muted:#9a9691;--line:#ffffff1a}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:#080807;color:var(--text);
+font:15px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;display:grid;place-items:center;padding:24px}
+.layout{width:min(1180px,100%);min-height:min(740px,calc(100vh - 48px));border:1px solid #ffffff14;
+border-radius:22px;overflow:hidden;background:#0d0d0c;box-shadow:0 32px 100px #000b;
+display:grid;grid-template-columns:1.12fr .88fr}
+.brand-panel{background-color:#0c0b09;background-image:linear-gradient(#ff9b2410 1px,transparent 1px),
+linear-gradient(90deg,#ff9b2410 1px,transparent 1px),radial-gradient(ellipse at 54% 42%,#46200d55,transparent 55%);
+background-size:42px 42px,42px 42px,auto;color:#fff;padding:34px 42px;display:flex;flex-direction:column;
+position:relative;overflow:hidden;border-right:1px solid #ffffff12}
+.brand-panel:before{content:"";position:absolute;width:520px;height:180px;right:-120px;top:90px;
+background:linear-gradient(115deg,transparent 35%,#ff7a1a35 48%,#ffc06a88 50%,#ff7a1a20 53%,transparent 68%);
+filter:blur(9px);transform:rotate(-12deg);pointer-events:none}
+.brand-panel:after{content:"";position:absolute;width:500px;height:500px;border:1px solid #ff8c2a20;
+border-radius:50%;left:50%;bottom:-340px;transform:translateX(-50%);box-shadow:0 0 0 38px #ff8c2a09,0 0 0 82px #ff8c2a06}
+.logo{display:flex;align-items:center;gap:11px;font-weight:750;font-size:1.05rem;position:relative;z-index:2}
+.logo-mark{width:36px;height:36px;border:1px solid #ff9b246b;border-radius:11px;background:#ff8a1a15;
+color:#ff9a3c;display:grid;place-items:center;font-size:.82rem;letter-spacing:-.05em}
+.product-tag{margin:72px 0 16px;padding:6px 10px;border:1px solid #ff9b243d;border-radius:99px;
+color:#ffc083;font-size:.68rem;font-weight:700;letter-spacing:.14em;width:max-content;position:relative;z-index:2}
+.pitch{position:relative;z-index:2;max-width:520px}.pitch h1{font-size:clamp(2.5rem,5vw,4.25rem);line-height:1.03;
+margin:0 0 18px;letter-spacing:-.055em;font-weight:720}.pitch h1 span{color:#ff9a42}
+.pitch p{color:#aaa6a0;max-width:440px;font-size:1rem;margin:0}
+.visual{position:relative;z-index:2;display:flex;align-items:center;justify-content:center;flex:1;min-height:260px}
+.mascot{width:min(290px,65%);max-height:330px;object-fit:contain;filter:drop-shadow(0 18px 35px #ff75172a)}
+.node{position:absolute;display:grid;place-items:center;width:42px;height:42px;border:1px solid #ffffff18;
+border-radius:12px;background:#151412;color:#ffad66;font-weight:700;font-size:.8rem;box-shadow:0 0 24px #ff7a1a10}
+.node.one{left:7%;top:24%}.node.two{right:8%;top:36%}.node.three{left:17%;bottom:17%}.node.four{right:16%;bottom:14%}
+.panel-foot{font-size:.76rem;color:#77736d;position:relative;z-index:2;letter-spacing:.02em}
+.form-panel{padding:54px clamp(30px,5vw,70px);display:flex;flex-direction:column;justify-content:center;background:#10100f}
+.secure{display:flex;align-items:center;gap:8px;color:#aaa49c;font-size:.76rem;margin-bottom:42px}
+.secure-dot{width:7px;height:7px;background:#62c995;border-radius:50%;box-shadow:0 0 12px #62c99588}
+.form-panel h2{font-size:1.9rem;letter-spacing:-.04em;margin:0 0 7px}.sub{color:var(--muted);margin:0 0 30px;font-size:.92rem}
+label{display:block;color:#e7e1d9;font-size:.82rem;font-weight:600;margin:18px 0 8px}
+input{width:100%;padding:13px 14px;border:1px solid #ffffff20;background:#0b0b0a;color:#fff;border-radius:9px;
+font:inherit;outline:none;transition:border-color .18s,box-shadow .18s}
+input:focus{border-color:var(--orange);box-shadow:0 0 0 3px #ff7a1a20}
+button{width:100%;margin-top:24px;border:0;border-radius:9px;background:linear-gradient(100deg,#ff8a24,#f06b12);
+color:#1d1008;padding:13px;font:inherit;font-weight:750;cursor:pointer;box-shadow:0 8px 26px #ff7a1a22;transition:transform .18s,filter .18s}
+button:hover{filter:brightness(1.08);transform:translateY(-1px)}
+.error{background:#2c1710;border:1px solid #87401f;color:#ffb08a;padding:11px 13px;border-radius:9px;margin:0 0 15px}
+.form-foot{margin-top:32px;padding-top:18px;border-top:1px solid #ffffff12;color:#77736d;font-size:.75rem}
+@media(max-width:760px){body{padding:0}.layout{width:100%;min-height:100vh;border:0;border-radius:0;grid-template-columns:1fr}
+.brand-panel{min-height:500px;padding:26px 28px;border-right:0;border-bottom:1px solid #ffffff12}
+.product-tag{margin-top:42px}.pitch h1{font-size:clamp(2.3rem,11vw,3.25rem)}.visual{min-height:210px}.mascot{width:210px;max-height:235px}
+.node{transform:scale(.82)}.form-panel{padding:40px 28px 46px}.secure{margin-bottom:24px}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{transition:none!important}}
 """
 
 
 def auth_page(error=""):
-    shop = esc(os.getenv("SHOP_NAME", "Shoes Center"))
     error_html = '<div class="error">{}</div>'.format(esc(error)) if error else ""
     fields = """<label for="username">Nom d’utilisateur</label>
 <input id="username" name="username" autocomplete="username" required>
@@ -133,16 +151,21 @@ def auth_page(error=""):
 <input id="password" name="password" type="password" autocomplete="current-password" required>
 <button type="submit">Se connecter</button>"""
     return """<!doctype html><html lang="fr"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1"><title>Connexion · {shop}</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>Connexion · InstaAgent</title>
 <style>{css}</style></head><body><div class="layout">
 <section class="brand-panel"><div class="logo"><span class="logo-mark">IA</span>InstaAgent</div>
-<div class="pitch"><h1>Automate your growth with InstaAgent.</h1>
-<p>Your Instagram assistant for smarter customer conversations.</p></div>
-<img class="mascot" src="/auth/mascot.png" alt="Mascotte robot InstaAgent">
-<div class="panel-foot">Un espace réservé à l’équipe de la boutique.</div></section>
-<section class="form-panel"><h2>Connexion</h2><p class="sub">Connectez-vous pour gérer vos commandes et votre stock.</p>{error}
-<form method="post" action="/login">{fields}</form></section>
-</div></body></html>""".format(shop=shop, css=AUTH_CSS, error=error_html, fields=fields)
+<div class="product-tag">INSTAGRAM COMMERCE AUTOMATION</div>
+<div class="pitch"><h1>Automate your growth <span>with InstaAgent.</span></h1>
+<p>Turn every Instagram conversation into a better customer experience.</p></div>
+<div class="visual"><span class="node one">DM</span><span class="node two">AI</span>
+<span class="node three">↗</span><span class="node four">IG</span>
+<img class="mascot" src="/auth/mascot.png" alt="Mascotte robot InstaAgent"></div>
+<div class="panel-foot">SMARTER CONVERSATIONS · BETTER CUSTOMER EXPERIENCES</div></section>
+<section class="form-panel"><div class="secure"><span class="secure-dot"></span>Accès sécurisé propriétaire</div>
+<h2>Ravi de vous revoir</h2><p class="sub">Connectez-vous pour gérer votre espace InstaAgent.</p>{error}
+<form method="post" action="/login">{fields}</form>
+<div class="form-foot">Accès réservé à l’équipe InstaAgent.</div></section>
+</div></body></html>""".format(css=AUTH_CSS, error=error_html, fields=fields)
 
 
 @auth_router.get("/login", response_class=HTMLResponse)
