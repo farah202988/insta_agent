@@ -93,7 +93,6 @@ STATUS_LABEL = {
 }
 
 AUTH_CSS = """
-@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 :root{--orange:#ff7a1a;--text:#f6f3ef;--muted:#9a9691;--line:#ffffff1a}
 *{box-sizing:border-box}body{margin:0;height:100vh;overflow:hidden;background:#080807;color:var(--text);
 font:15px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;display:grid;place-items:center;padding:20px}
@@ -114,11 +113,17 @@ border-radius:50%;left:50%;bottom:-340px;transform:translateX(-50%);box-shadow:0
 color:#ff9a3c;display:grid;place-items:center;font-size:.82rem;letter-spacing:-.05em}
 .product-tag{margin:40px 0 12px;padding:6px 10px;border:1px solid #ff9b243d;border-radius:99px;
 color:#ffc083;font-size:.68rem;font-weight:700;letter-spacing:.14em;width:max-content;position:relative;z-index:2}
-.pitch{position:relative;z-index:2;max-width:520px}.pitch h1{font-family:"Press Start 2P",monospace;font-size:clamp(1.15rem,2vw,1.5rem);
-line-height:1.7;margin:0 0 18px;letter-spacing:0;font-weight:400}.pitch h1 span{color:#ff9a42}
+.pitch{position:relative;z-index:2;max-width:520px}.pitch h1{font-size:clamp(2.2rem,4vw,3.65rem);line-height:1.03;
+margin:0 0 18px;letter-spacing:-.055em;font-weight:720}.pitch h1 span{color:#ff9a42}
 .pitch p{color:#aaa6a0;max-width:440px;font-size:1rem;margin:0}
 .visual{position:relative;z-index:2;display:flex;align-items:center;justify-content:center;flex:1;min-height:0}
-.mascot{width:min(240px,58%);max-height:min(240px,32vh);object-fit:contain;filter:drop-shadow(0 18px 35px #ff75172a)}
+.visual:before{content:"";position:absolute;left:0;right:0;top:50%;height:1px;
+background:linear-gradient(90deg,transparent 0,#ff8a1a45 12%,#ff8a1a45 39%,transparent 39% 61%,#ff8a1a45 61% 88%,transparent 100%)}
+.visual:after{content:"";position:absolute;top:0;bottom:50%;left:50%;width:1px;background:linear-gradient(180deg,transparent,#ff8a1a35)}
+.robot-core{position:relative;z-index:2;width:min(220px,55%);aspect-ratio:1;display:grid;place-items:center;
+border:1px solid #ff9b2438;border-radius:24px;background:radial-gradient(circle at 50% 60%,#411d0c66,#11100e 72%);
+box-shadow:0 0 36px #ff7a1a14,inset 0 0 24px #ff7a1a0a}
+.mascot{width:92%;height:92%;object-fit:contain;filter:drop-shadow(0 12px 26px #ff75172a)}
 .panel-foot{font-size:.76rem;color:#77736d;position:relative;z-index:2;letter-spacing:.02em}
 .form-panel{min-height:0;padding:38px clamp(30px,5vw,70px);display:flex;flex-direction:column;justify-content:center;background:#10100f}
 .secure{display:flex;align-items:center;gap:8px;color:#aaa49c;font-size:.76rem;margin-bottom:28px}
@@ -135,7 +140,7 @@ button:hover{filter:brightness(1.08);transform:translateY(-1px)}
 .form-foot{margin-top:24px;padding-top:14px;border-top:1px solid #ffffff12;color:#77736d;font-size:.75rem}
 @media(max-width:760px){body{height:auto;min-height:100svh;overflow:auto;padding:0}.layout{width:100%;height:auto;min-height:100svh;
 border:0;border-radius:0;grid-template-columns:1fr}.brand-panel{min-height:430px;padding:24px 28px;border-right:0;border-bottom:1px solid #ffffff12}
-.product-tag{margin-top:34px}.pitch h1{font-size:clamp(1.05rem,4.8vw,1.35rem);line-height:1.65}.visual{min-height:165px}.mascot{width:175px;max-height:180px}
+.product-tag{margin-top:34px}.pitch h1{font-size:clamp(2.3rem,11vw,3.25rem)}.visual{min-height:165px}.robot-core{width:150px;border-radius:20px}
 .form-panel{padding:34px 28px 40px}.secure{margin-bottom:20px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{transition:none!important}}
 """
@@ -155,7 +160,7 @@ def auth_page(error=""):
 <div class="product-tag">INSTAGRAM COMMERCE AUTOMATION</div>
 <div class="pitch"><h1>Automate your growth <span>with InstaAgent.</span></h1>
 <p>Turn every Instagram conversation into a better customer experience.</p></div>
-<div class="visual"><img class="mascot" src="/auth/mascot.png" alt="Mascotte robot InstaAgent"></div>
+<div class="visual"><div class="robot-core"><img class="mascot" src="/auth/mascot.png" alt="Mascotte robot InstaAgent"></div></div>
 <div class="panel-foot">SMARTER CONVERSATIONS · BETTER CUSTOMER EXPERIENCES</div></section>
 <section class="form-panel"><div class="secure"><span class="secure-dot"></span>Accès sécurisé propriétaire</div>
 <h2>Ravi de vous revoir</h2><p class="sub">Connectez-vous pour gérer votre espace InstaAgent.</p>{error}
