@@ -9,7 +9,7 @@ from html import escape as esc
 from urllib.parse import urlsplit
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile
-from fastapi.responses import HTMLResponse, RedirectResponse, Response
+from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse, Response
 
 import db
 
@@ -93,32 +93,34 @@ STATUS_LABEL = {
 }
 
 AUTH_CSS = """
-:root{--navy:#172238;--pink:#d41463;--ink:#202b3c;--muted:#728096;--line:#e5e9f0}
-*{box-sizing:border-box}body{margin:0;min-height:100vh;background:#f4f6fa;color:var(--ink);
+:root{--orange:#f97316;--ink:#202b3c;--muted:#728096;--line:#e5e9f0}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:#fff8f1;color:var(--ink);
 font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;display:grid;place-items:center;padding:24px}
 .layout{width:min(980px,100%);min-height:600px;background:#fff;border-radius:24px;overflow:hidden;
-box-shadow:0 28px 90px #17223822;display:grid;grid-template-columns:1.05fr .95fr}
-.brand-panel{background:linear-gradient(145deg,#172238,#283a58 65%,#d41463);color:#fff;padding:52px 44px;
+box-shadow:0 28px 90px #70320d20;display:grid;grid-template-columns:1.05fr .95fr}
+.brand-panel{background:linear-gradient(145deg,#261508,#51260d 62%,#c64a0b);color:#fff;padding:42px 44px;
 display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden}
 .brand-panel:after{content:"";position:absolute;width:340px;height:340px;border:1px solid #ffffff22;
 border-radius:50%;right:-150px;bottom:-100px;box-shadow:0 0 0 35px #ffffff0b,0 0 0 75px #ffffff08}
 .logo{display:flex;align-items:center;gap:12px;font-weight:750;font-size:1.2rem;position:relative;z-index:1}
-.logo-mark{width:44px;height:44px;border-radius:14px;background:#fff;color:var(--pink);display:grid;place-items:center;font-weight:900}
-.pitch{position:relative;z-index:1}.pitch h1{font-size:2.35rem;line-height:1.12;margin:0 0 14px;letter-spacing:-.04em}
-.pitch p{color:#dce4f2;max-width:340px;margin:0}.panel-foot{font-size:.85rem;color:#c7d0df;position:relative;z-index:1}
+.logo-mark{width:44px;height:44px;border-radius:14px;background:#fff;color:var(--orange);display:grid;place-items:center;font-weight:900}
+.pitch{position:relative;z-index:1;margin-top:24px}.pitch h1{font-size:2.35rem;line-height:1.12;margin:0 0 14px;letter-spacing:-.04em}
+.pitch p{color:#ffe7d2;max-width:340px;margin:0}
+.mascot{display:block;width:min(240px,70%);height:auto;object-fit:contain;align-self:center;margin:4px auto 0;
+position:relative;z-index:1;filter:drop-shadow(0 18px 24px #150b0780)}
+.panel-foot{font-size:.85rem;color:#e7cbb6;position:relative;z-index:1}
 .form-panel{padding:64px 54px;display:flex;flex-direction:column;justify-content:center}
 .form-panel h2{font-size:1.8rem;letter-spacing:-.03em;margin:0 0 5px}.sub{color:var(--muted);margin:0 0 28px}
 label{display:block;font-size:.9rem;font-weight:650;margin:17px 0 7px}
 input{width:100%;padding:13px 14px;border:1px solid var(--line);border-radius:11px;font:inherit;outline:none}
-input:focus{border-color:var(--pink);box-shadow:0 0 0 4px #d4146318}
-button{width:100%;margin-top:22px;border:0;border-radius:11px;background:var(--pink);color:white;
-padding:14px;font:inherit;font-weight:700;cursor:pointer;box-shadow:0 8px 18px #d4146330}
-button:hover{background:#b80f53}.error{background:#fff0f2;border:1px solid #ffd0d8;color:#a31838;
-padding:11px 13px;border-radius:10px;margin:0 0 15px}.switch{margin-top:22px;color:var(--muted);text-align:center}
-a{color:var(--pink);font-weight:650;text-decoration:none}.switch a:hover{text-decoration:underline}
+input:focus{border-color:var(--orange);box-shadow:0 0 0 4px #f973161c}
+button{width:100%;margin-top:22px;border:0;border-radius:11px;background:var(--orange);color:white;
+padding:14px;font:inherit;font-weight:700;cursor:pointer;box-shadow:0 8px 18px #f9731638}
+button:hover{background:#ea580c}.error{background:#fff4e8;border:1px solid #fed7aa;color:#9a3412;
+padding:11px 13px;border-radius:10px;margin:0 0 15px}
 .note{margin-top:20px;font-size:.82rem;color:var(--muted)}
 @media(max-width:720px){.layout{grid-template-columns:1fr;min-height:auto}.brand-panel{min-height:220px;padding:26px 28px}
-.pitch h1{font-size:1.65rem}.panel-foot{display:none}.form-panel{padding:34px 28px}}
+.pitch h1{font-size:1.65rem}.mascot{width:150px;margin-top:12px}.panel-foot{display:none}.form-panel{padding:34px 28px}}
 """
 
 
@@ -133,9 +135,10 @@ def auth_page(error=""):
     return """<!doctype html><html lang="fr"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><title>Connexion · {shop}</title>
 <style>{css}</style></head><body><div class="layout">
-<section class="brand-panel"><div class="logo"><span class="logo-mark">SC</span>{shop}</div>
-<div class="pitch"><h1>La gestion de votre boutique, en toute simplicité.</h1>
-<p>Retrouvez vos commandes et votre stock au même endroit.</p></div>
+<section class="brand-panel"><div class="logo"><span class="logo-mark">IA</span>InstaAgent</div>
+<div class="pitch"><h1>Automate your growth with InstaAgent.</h1>
+<p>Your Instagram assistant for smarter customer conversations.</p></div>
+<img class="mascot" src="/auth/mascot.png" alt="Mascotte robot InstaAgent">
 <div class="panel-foot">Un espace réservé à l’équipe de la boutique.</div></section>
 <section class="form-panel"><h2>Connexion</h2><p class="sub">Connectez-vous pour gérer vos commandes et votre stock.</p>{error}
 <form method="post" action="/login">{fields}</form></section>
@@ -145,6 +148,12 @@ def auth_page(error=""):
 @auth_router.get("/login", response_class=HTMLResponse)
 def login_page():
     return HTMLResponse(auth_page())
+
+
+@auth_router.get("/auth/mascot.png")
+def auth_mascot():
+    path = os.path.join(os.path.dirname(__file__), "static", "instaagent-mascot.png")
+    return FileResponse(path, media_type="image/png")
 
 
 @auth_router.post("/login", response_class=HTMLResponse)
