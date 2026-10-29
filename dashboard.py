@@ -108,7 +108,7 @@ padding:clamp(16px,3vw,40px) clamp(18px,4vw,48px);min-height:calc(100svh - 70px)
 .stage{position:relative;display:grid;place-items:center;min-height:440px}
 .beam{position:absolute;top:-10%;left:50%;width:96px;height:78%;transform:skewX(-10deg);border-radius:4px;opacity:.8;filter:blur(1px);
 background:linear-gradient(180deg,#e0201b,#7a0f0c 78%,transparent)}
-.floor{position:absolute;bottom:3%;width:92%;height:80px;background:radial-gradient(ellipse at center,#e0201b8c,transparent 70%);filter:blur(12px)}
+.floor{position:absolute;bottom:3%;width:92%;height:80px;background:radial-gradient(ellipse at center,#42d8ff55,transparent 70%);filter:blur(12px)}
 .robot{position:relative;width:min(430px,82%);height:auto;filter:drop-shadow(0 30px 40px #000a);animation:float 5s ease-in-out infinite}
 .eye{animation:blink 5s infinite;transform-box:fill-box;transform-origin:center}
 .robot.shy .eye{animation:none;transform:scaleY(.08);transition:transform .25s}
@@ -220,7 +220,7 @@ var scene=new THREE.Scene();
 var pm=new THREE.PMREMGenerator(renderer);
 scene.environment=pm.fromScene(new ENV.RoomEnvironment(),0.04).texture;
 var camera=new THREE.PerspectiveCamera(30,1,0.1,80);
-camera.position.set(0,2.4,10.9);camera.lookAt(0,1.75,0);
+camera.position.set(0,4.0,10.9);camera.lookAt(0,1.35,0);
 
 var key=new THREE.DirectionalLight(0xf4f8f6,1.6);key.position.set(3,6,6);scene.add(key);
 var red=new THREE.PointLight(0xe0201b,70,16);red.position.set(-4,2.5,-1.5);scene.add(red);
@@ -267,11 +267,27 @@ sg.save();sg.lineCap='round';sg.strokeStyle=GLOW;sg.shadowColor=GLOW;sg.shadowBl
 sg.beginPath();sg.arc(400+ex*0.5,300+ey*0.5,66,Math.PI*0.2,Math.PI*0.8);sg.stroke();sg.restore();
 tex.needsUpdate=true;}
 
-var root=new THREE.Group();root.rotation.y=0.35;scene.add(root);
-/* socle rond */
-add(root,new THREE.Mesh(new THREE.CylinderGeometry(1.55,1.65,0.3,72),black),0,-0.15,0);
-var r1=add(root,new THREE.Mesh(new THREE.TorusGeometry(1.56,0.03,12,96),redGlow),0,0.0,0);r1.rotation.x=Math.PI/2;
-var r2=add(root,new THREE.Mesh(new THREE.TorusGeometry(1.1,0.02,12,96),glowMat),0,0.004,0);r2.rotation.x=Math.PI/2;
+/* smartphone et halo : le robot semble émerger de l’écran */
+var phone=new THREE.Group();phone.position.y=-0.08;scene.add(phone);
+add(phone,new THREE.Mesh(new THREE.BoxGeometry(3.45,0.16,1.92),black),0,0,0);
+var glass=phys(0x07131b,0.2,0.25,0.9);
+add(phone,new THREE.Mesh(new THREE.BoxGeometry(3.28,0.025,1.76),glass),0,0.092,0);
+var screenLine=new THREE.MeshBasicMaterial({color:0x5ff0c8,toneMapped:false});
+var screenRed=new THREE.MeshBasicMaterial({color:0xe0201b,toneMapped:false});
+add(phone,new THREE.Mesh(new THREE.BoxGeometry(0.36,0.008,0.026),screenLine),0,0.108,-0.78);
+[-1.05,-0.38,0.38,1.05].forEach(function(x,i){
+var icon=add(phone,new THREE.Mesh(new THREE.CircleGeometry(0.09,28),i===1?screenRed:screenLine),x,0.108,-0.49);icon.rotation.x=-Math.PI/2;
+});
+var cardMat=new THREE.MeshBasicMaterial({color:0x17303a,toneMapped:false});
+add(phone,new THREE.Mesh(new THREE.BoxGeometry(0.62,0.012,0.36),cardMat),-0.92,0.108,0.12);
+add(phone,new THREE.Mesh(new THREE.BoxGeometry(0.62,0.012,0.36),cardMat),0.92,0.108,0.12);
+var holo=new THREE.MeshBasicMaterial({color:0x62eaff,toneMapped:false,transparent:true,opacity:0.88});
+var hologram=new THREE.Group();hologram.position.set(0,0.12,0);scene.add(hologram);
+var r1=add(hologram,new THREE.Mesh(new THREE.TorusGeometry(0.78,0.022,12,96),holo),0,0,0);r1.rotation.x=Math.PI/2;
+var r2=add(hologram,new THREE.Mesh(new THREE.TorusGeometry(1.08,0.009,10,96),holo),0,0.01,0);r2.rotation.x=Math.PI/2;
+var beamMat=new THREE.MeshBasicMaterial({color:0x39cfff,toneMapped:false,transparent:true,opacity:0.09,side:THREE.DoubleSide,depthWrite:false});
+add(hologram,new THREE.Mesh(new THREE.CylinderGeometry(0.78,0.34,1.8,48,1,true),beamMat),0,0.9,0);
+var root=new THREE.Group();root.rotation.y=0.35;root.position.y=0.1;scene.add(root);
 var body=new THREE.Group();root.add(body);
 /* corps type humanoide */
 var dg=phys(0x3b464a,0.34,0.3,0.7);
@@ -375,6 +391,7 @@ armLx+=((shy>0.5?-1.35:0)-armLx)*f12;
 armR.rotation.z=armRz;armL.rotation.z=armLz;armL.rotation.x=armLx;
 bulb.material.emissiveIntensity=1.3+Math.sin(t*3)*0.7;
 chest.scale.setScalar(0.95+Math.sin(t*2.2)*0.06);
+hologram.rotation.y=t*0.16;hologram.scale.setScalar(1+Math.sin(t*2.1)*0.025);holo.opacity=0.72+Math.sin(t*2.1)*0.12;
 red.intensity=65+Math.sin(t*1.2)*8;
 renderer.render(scene,camera);
 if(!shown){shown=true;canvas.classList.add('on');if(svg)svg.style.display='none';}
