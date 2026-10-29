@@ -302,7 +302,7 @@ function makeHand(s){var h=new THREE.Group();
 add(h,SP(0.15,white,1.1,1.0,0.62),0,-0.13,0);
 var L=[0.1,0.135,0.12,0.085];
 for(var i=0;i<4;i++){var r=0.05,f=CAP(r,L[i],white);f.position.set((i-1.5)*0.077,-0.2-(L[i]/2+r)+0.05,0);f.rotation.z=-(i-1.5)*0.1;f.scale.z=0.85;h.add(f);}
-var th=CAP(0.055,0.08,white);th.position.set(-s*0.17,-0.16,0.0);th.rotation.z=s*0.95;th.scale.z=0.85;h.add(th);
+var th=CAP(0.055,0.08,white);th.position.set(-s*0.16,-0.17,0.02);th.rotation.z=-s*0.4;th.scale.z=0.85;h.add(th);
 h.scale.setScalar(1.22);return h;}
 function makeArm(s){var g=new THREE.Group();g.position.set(s*0.8,2.0,0);
 add(g,SP(0.19,dg),0,0,0);
@@ -321,12 +321,21 @@ shape.add(new THREE.Mesh(new THREE.SphereGeometry(1,64,48),white));
 var patch=new THREE.Mesh(new THREE.SphereGeometry(1.012,64,40,Math.PI/2-1.0,2.0,Math.PI/2-0.66,1.32),new THREE.MeshBasicMaterial({map:tex,transparent:true,toneMapped:false}));
 shape.add(patch);
 [-1,1].forEach(function(s){
-var ear=add(head,new THREE.Mesh(new THREE.CylinderGeometry(0.4,0.4,0.24,48),grey),s*1.17,0.85,0);ear.rotation.z=Math.PI/2;
-var rg=add(head,new THREE.Mesh(new THREE.TorusGeometry(0.26,0.05,16,56),glowMat),s*1.3,0.85,0);rg.rotation.y=Math.PI/2;
-var dk=add(head,new THREE.Mesh(new THREE.CylinderGeometry(0.2,0.2,0.04,40),black),s*1.285,0.85,0);dk.rotation.z=Math.PI/2;
+var ear=add(head,new THREE.Mesh(new THREE.CylinderGeometry(0.3,0.3,0.1,48),grey),s*1.1,0.85,0);ear.rotation.z=Math.PI/2;ear.scale.set(1.15,1,0.8);
+var rg=add(head,new THREE.Mesh(new THREE.TorusGeometry(0.17,0.032,16,56),glowMat),s*1.165,0.85,0);rg.rotation.y=Math.PI/2;
+var dk=add(head,new THREE.Mesh(new THREE.CylinderGeometry(0.12,0.12,0.02,40),black),s*1.16,0.85,0);dk.rotation.z=Math.PI/2;
 });
-var ant=add(head,new THREE.Mesh(new THREE.CylinderGeometry(0.022,0.022,0.5,12),grey),0.2,1.95,-0.1);ant.rotation.z=-0.2;
-var bulb=add(head,new THREE.Mesh(new THREE.SphereGeometry(0.075,20,20),new THREE.MeshStandardMaterial({color:0xe0201b,emissive:0xff2a22,emissiveIntensity:1.5})),0.3,2.2,-0.1);
+/* ligne de separation + capteurs sur le dessus de la tete */
+function onHead(th,ph,k){return new THREE.Vector3(Math.sin(th)*Math.sin(ph),Math.cos(th),Math.sin(th)*Math.cos(ph)).multiplyScalar(k);}
+var pts=[];for(var i=0;i<=28;i++){var p=-1.35+2.7*i/28;pts.push(onHead(0.72-0.12*p*p,p,1.004));}
+shape.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),80,0.016,8,false),dg));
+[-1,1].forEach(function(s){var d=new THREE.Mesh(new THREE.SphereGeometry(0.045,20,16),dg);d.position.copy(onHead(0.8,s*0.2,1.005));d.scale.set(1,0.8,0.5);d.lookAt(d.position.clone().multiplyScalar(2));shape.add(d);});
+/* deux petites antennes */
+function antenna(s,m){var th=-s*0.35,bx=s*0.6,by=1.57,len=0.4;
+var a=add(head,new THREE.Mesh(new THREE.CylinderGeometry(0.017,0.017,len,12),grey),bx-Math.sin(th)*len/2,by+Math.cos(th)*len/2,-0.05);a.rotation.z=th;
+return add(head,new THREE.Mesh(new THREE.SphereGeometry(0.05,16,16),m),bx-Math.sin(th)*len,by+Math.cos(th)*len,-0.05);}
+var bulb=antenna(1,new THREE.MeshStandardMaterial({color:0xe0201b,emissive:0xff2a22,emissiveIntensity:1.5}));
+antenna(-1,new THREE.MeshBasicMaterial({color:0x5ff0c8,toneMapped:false}));
 
 function resize(){var w=stage.clientWidth||400,h=stage.clientHeight||400;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}
 if(window.ResizeObserver){new ResizeObserver(resize).observe(stage);}else{window.addEventListener('resize',resize);}
