@@ -113,7 +113,8 @@ background:linear-gradient(180deg,#e0201b,#7a0f0c 78%,transparent)}
 .eye{animation:blink 5s infinite;transform-box:fill-box;transform-origin:center}
 .robot.shy .eye{animation:none;transform:scaleY(.08);transition:transform .25s}
 .robot .eye{transition:transform .25s}
-.stage{cursor:crosshair}
+.stage{cursor:default}
+.robot-frame{position:relative;z-index:1;width:min(470px,100%);height:min(74vh,610px);border:0}
 @keyframes float{50%{transform:translateY(-10px)}}
 @keyframes blink{0%,94%,100%{transform:scaleY(1)}97%{transform:scaleY(.1)}}
 .panel{width:100%;max-width:450px;justify-self:center}
@@ -140,7 +141,7 @@ display:flex;justify-content:center;align-items:center;gap:12px;background:var(-
 .secure{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:12px;margin:0 0 18px}
 .secure-dot{width:7px;height:7px;border-radius:50%;background:var(--mint);box-shadow:0 0 10px var(--mint)}
 .form-foot{margin-top:22px;padding-top:14px;border-top:1px solid var(--line);color:#8fa39bb0;font-size:12px;text-align:center}
-@media(max-width:860px){.layout{grid-template-columns:1fr;gap:0}.stage{min-height:290px;order:-1}.robot{width:min(250px,64%)}.beam{width:60px}}
+@media(max-width:860px){.layout{grid-template-columns:1fr;gap:0}.stage{min-height:290px;order:-1}.robot{width:min(250px,64%)}.robot-frame{width:min(300px,82%);height:min(38vh,300px)}.beam{width:60px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
 """
 
@@ -171,29 +172,9 @@ AUTH_ROBOT = """<svg class="robot" viewBox="0 0 400 460" xmlns="http://www.w3.or
 
 AUTH_JS = """
 (function(){
-var f=document.getElementById('login-form'),b=document.getElementById('toggle-pw'),p=document.getElementById('password'),u=document.getElementById('username');
-b.addEventListener('click',function(){var s=p.type==='password';p.type=s?'text':'password';b.setAttribute('aria-label',s?'Masquer le mot de passe':'Afficher le mot de passe');robot.classList.toggle('shy',document.activeElement===p&&p.type==='password');});
+var f=document.getElementById('login-form'),b=document.getElementById('toggle-pw'),p=document.getElementById('password');
+b.addEventListener('click',function(){var s=p.type==='password';p.type=s?'text':'password';b.setAttribute('aria-label',s?'Masquer le mot de passe':'Afficher le mot de passe');});
 f.addEventListener('submit',function(){var s=document.getElementById('submit-btn');s.disabled=true;s.firstElementChild.textContent='Connexion…';});
-
-var robot=document.querySelector('.robot'),head=document.getElementById('bot-head'),eyes=document.getElementById('bot-eyes'),body=document.getElementById('bot-body');
-var reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-var t={x:0,y:0},c={x:0,y:0};
-function clamp(v){return Math.max(-1,Math.min(1,v));}
-function aim(x,y){var r=robot.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height*0.4;
-t.x=clamp((x-cx)/(window.innerWidth*0.5));t.y=clamp((y-cy)/(window.innerHeight*0.5));}
-window.addEventListener('pointermove',function(e){aim(e.clientX,e.clientY);},{passive:true});
-document.addEventListener('mouseleave',function(){t.x=0;t.y=0;});
-p.addEventListener('focus',function(){if(p.type==='password')robot.classList.add('shy');});
-p.addEventListener('blur',function(){robot.classList.remove('shy');});
-u.addEventListener('input',function(){var r=u.getBoundingClientRect();aim(r.left+r.width*Math.min(1,u.value.length/24),r.top);});
-robot.addEventListener('click',function(){robot.animate([{transform:'translateY(0) scale(1)'},{transform:'translateY(-22px) scale(1.04)'},{transform:'translateY(0) scale(1)'}],{duration:480,easing:'cubic-bezier(.3,1.6,.5,1)'});});
-function tick(){
-c.x+=(t.x-c.x)*0.12;c.y+=(t.y-c.y)*0.12;
-head.setAttribute('transform','translate('+(c.x*10).toFixed(2)+' '+(c.y*6).toFixed(2)+') rotate('+(c.x*11).toFixed(2)+' 200 255)');
-eyes.setAttribute('transform','translate('+(c.x*10).toFixed(2)+' '+(c.y*8).toFixed(2)+')');
-body.setAttribute('transform','translate('+(c.x*-4).toFixed(2)+' '+(c.y*-1.5).toFixed(2)+')');
-requestAnimationFrame(tick);}
-if(!reduce)tick();
 })();
 """
 
@@ -208,7 +189,7 @@ def auth_page(error=""):
 <style>{css}</style></head><body>
 <header class="topbar"><div class="brand">INSTA<i>·</i>AGENT</div><span>Espace propriétaire</span></header>
 <main class="layout">
-<section class="stage" aria-hidden="true"><div class="beam"></div><div class="floor"></div>{robot}</section>
+<section class="stage" aria-hidden="true"><div class="beam"></div><div class="floor"></div><iframe class="robot-frame" src="/auth/robot-3d" title="Robot InstaAgent animé" tabindex="-1"></iframe></section>
 <section class="panel">
 <div class="eyebrow">Mêmes conversations<br>Nouvelle intelligence</div>
 <h1>AGIT</h1><h2>Autrement</h2><div class="rule"></div>
@@ -238,6 +219,18 @@ def login_page():
 def auth_mascot():
     path = os.path.join(os.path.dirname(__file__), "static", "instaagent-mascot.png")
     return FileResponse(path, media_type="image/png")
+
+
+@auth_router.get("/auth/robot-3d")
+def auth_robot_3d():
+    path = os.path.join(os.path.dirname(__file__), "static", "login-robot.html")
+    return FileResponse(path, media_type="text/html")
+
+
+@auth_router.get("/auth/login-robot.js")
+def auth_robot_3d_script():
+    path = os.path.join(os.path.dirname(__file__), "static", "login-robot.js")
+    return FileResponse(path, media_type="text/javascript")
 
 
 @auth_router.post("/login", response_class=HTMLResponse)
