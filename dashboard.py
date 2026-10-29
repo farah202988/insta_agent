@@ -111,6 +111,9 @@ background:linear-gradient(180deg,#e0201b,#7a0f0c 78%,transparent)}
 .floor{position:absolute;bottom:3%;width:92%;height:80px;background:radial-gradient(ellipse at center,#e0201b8c,transparent 70%);filter:blur(12px)}
 .robot{position:relative;width:min(430px,82%);height:auto;filter:drop-shadow(0 30px 40px #000a);animation:float 5s ease-in-out infinite}
 .eye{animation:blink 5s infinite;transform-box:fill-box;transform-origin:center}
+.robot.shy .eye{animation:none;transform:scaleY(.08);transition:transform .25s}
+.robot .eye{transition:transform .25s}
+.stage{cursor:crosshair}
 @keyframes float{50%{transform:translateY(-10px)}}
 @keyframes blink{0%,94%,100%{transform:scaleY(1)}97%{transform:scaleY(.1)}}
 .panel{width:100%;max-width:450px;justify-self:center}
@@ -145,31 +148,52 @@ AUTH_ROBOT = """<svg class="robot" viewBox="0 0 400 460" xmlns="http://www.w3.or
 <defs>
 <linearGradient id="m" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#b6ded0"/><stop offset=".55" stop-color="#7fb8a6"/><stop offset="1" stop-color="#3d7566"/></linearGradient>
 <linearGradient id="v" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1a0b0b"/><stop offset="1" stop-color="#050a09"/></linearGradient>
+<linearGradient id="rim" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e0201b"/><stop offset=".5" stop-color="#ff9a5a"/><stop offset="1" stop-color="#7fb8a6"/></linearGradient>
 <radialGradient id="g"><stop offset="0" stop-color="#ff5a50"/><stop offset="1" stop-color="#e0201b"/></radialGradient>
 </defs>
 <ellipse cx="200" cy="432" rx="150" ry="14" fill="#e0201b" opacity=".35"/>
-<rect x="190" y="14" width="6" height="40" fill="#3d7566"/><circle cx="193" cy="12" r="9" fill="url(#g)"/>
+<g id="bot-head"><rect x="190" y="14" width="6" height="40" fill="#3d7566"/><circle cx="193" cy="12" r="9" fill="url(#g)"/>
 <path d="M96 180Q96 70 200 70Q304 70 304 180Q304 250 200 250Q96 250 96 180Z" fill="url(#m)"/>
 <path d="M120 120Q150 80 215 80" stroke="#fff" stroke-opacity=".5" stroke-width="6" fill="none" stroke-linecap="round"/>
 <rect x="66" y="150" width="34" height="64" rx="16" fill="#2c5a4e"/><rect x="300" y="150" width="34" height="64" rx="16" fill="#2c5a4e"/>
 <rect x="62" y="168" width="10" height="28" rx="5" fill="url(#g)"/><rect x="328" y="168" width="10" height="28" rx="5" fill="url(#g)"/>
-<rect x="122" y="128" width="156" height="92" rx="40" fill="url(#v)" stroke="#0b1f1a" stroke-width="3"/>
-<ellipse class="eye" cx="162" cy="172" rx="16" ry="20" fill="url(#g)"/><ellipse class="eye" cx="238" cy="172" rx="16" ry="20" fill="url(#g)"/>
-<ellipse cx="157" cy="164" rx="4" ry="6" fill="#fff" opacity=".8"/><ellipse cx="233" cy="164" rx="4" ry="6" fill="#fff" opacity=".8"/>
-<rect x="170" y="248" width="60" height="22" fill="#2c5a4e"/>
+<rect x="122" y="128" width="156" height="92" rx="40" fill="url(#v)" stroke="url(#rim)" stroke-width="4"/>
+<g id="bot-eyes"><ellipse class="eye" cx="162" cy="172" rx="16" ry="20" fill="url(#g)"/><ellipse class="eye" cx="238" cy="172" rx="16" ry="20" fill="url(#g)"/>
+<ellipse cx="157" cy="164" rx="4" ry="6" fill="#fff" opacity=".8"/><ellipse cx="233" cy="164" rx="4" ry="6" fill="#fff" opacity=".8"/></g></g>
+<g id="bot-body"><rect x="170" y="248" width="60" height="22" fill="#2c5a4e"/>
 <path d="M110 300Q110 266 200 266Q290 266 290 300L300 420Q200 446 100 420Z" fill="url(#m)"/>
 <path d="M84 310Q60 340 80 400" stroke="#7fb8a6" stroke-width="26" stroke-linecap="round" fill="none"/>
 <path d="M316 310Q340 340 320 400" stroke="#3d7566" stroke-width="26" stroke-linecap="round" fill="none"/>
 <rect x="168" y="304" width="64" height="64" rx="18" fill="#0a1a17" stroke="url(#g)" stroke-width="4"/>
 <circle cx="200" cy="336" r="14" fill="none" stroke="#e0201b" stroke-width="4"/><circle cx="214" cy="322" r="3" fill="#e0201b"/>
 <path d="M130 392L270 392" stroke="#e0201b" stroke-width="4" stroke-linecap="round" opacity=".8"/>
-</svg>"""
+</g></svg>"""
 
 AUTH_JS = """
 (function(){
-var f=document.getElementById('login-form'),b=document.getElementById('toggle-pw'),p=document.getElementById('password');
-b.addEventListener('click',function(){var s=p.type==='password';p.type=s?'text':'password';b.setAttribute('aria-label',s?'Masquer le mot de passe':'Afficher le mot de passe');});
+var f=document.getElementById('login-form'),b=document.getElementById('toggle-pw'),p=document.getElementById('password'),u=document.getElementById('username');
+b.addEventListener('click',function(){var s=p.type==='password';p.type=s?'text':'password';b.setAttribute('aria-label',s?'Masquer le mot de passe':'Afficher le mot de passe');robot.classList.toggle('shy',document.activeElement===p&&p.type==='password');});
 f.addEventListener('submit',function(){var s=document.getElementById('submit-btn');s.disabled=true;s.firstElementChild.textContent='Connexion…';});
+
+var robot=document.querySelector('.robot'),head=document.getElementById('bot-head'),eyes=document.getElementById('bot-eyes'),body=document.getElementById('bot-body');
+var reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+var t={x:0,y:0},c={x:0,y:0};
+function clamp(v){return Math.max(-1,Math.min(1,v));}
+function aim(x,y){var r=robot.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height*0.4;
+t.x=clamp((x-cx)/(window.innerWidth*0.5));t.y=clamp((y-cy)/(window.innerHeight*0.5));}
+window.addEventListener('pointermove',function(e){aim(e.clientX,e.clientY);},{passive:true});
+document.addEventListener('mouseleave',function(){t.x=0;t.y=0;});
+p.addEventListener('focus',function(){if(p.type==='password')robot.classList.add('shy');});
+p.addEventListener('blur',function(){robot.classList.remove('shy');});
+u.addEventListener('input',function(){var r=u.getBoundingClientRect();aim(r.left+r.width*Math.min(1,u.value.length/24),r.top);});
+robot.addEventListener('click',function(){robot.animate([{transform:'translateY(0) scale(1)'},{transform:'translateY(-22px) scale(1.04)'},{transform:'translateY(0) scale(1)'}],{duration:480,easing:'cubic-bezier(.3,1.6,.5,1)'});});
+function tick(){
+c.x+=(t.x-c.x)*0.12;c.y+=(t.y-c.y)*0.12;
+head.setAttribute('transform','translate('+(c.x*10).toFixed(2)+' '+(c.y*6).toFixed(2)+') rotate('+(c.x*11).toFixed(2)+' 200 255)');
+eyes.setAttribute('transform','translate('+(c.x*10).toFixed(2)+' '+(c.y*8).toFixed(2)+')');
+body.setAttribute('transform','translate('+(c.x*-4).toFixed(2)+' '+(c.y*-1.5).toFixed(2)+')');
+requestAnimationFrame(tick);}
+if(!reduce)tick();
 })();
 """
 
