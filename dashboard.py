@@ -273,29 +273,44 @@ add(root,new THREE.Mesh(new THREE.CylinderGeometry(1.55,1.65,0.3,72),black),0,-0
 var r1=add(root,new THREE.Mesh(new THREE.TorusGeometry(1.56,0.03,12,96),redGlow),0,0.0,0);r1.rotation.x=Math.PI/2;
 var r2=add(root,new THREE.Mesh(new THREE.TorusGeometry(1.1,0.02,12,96),glowMat),0,0.004,0);r2.rotation.x=Math.PI/2;
 var body=new THREE.Group();root.add(body);
-/* jambes et pieds */
-[-1,1].forEach(function(s){
-add(body,SP(0.3,white,1,0.55,1.45),s*0.32,0.17,0.1);
-add(body,SP(0.31,black,1,0.2,1.46),s*0.32,0.045,0.1);
-add(body,SP(0.115,black),s*0.3,0.34,0);
-add(body,CAP(0.115,0.3,white),s*0.3,0.64,0);
-add(body,SP(0.14,black),s*0.3,0.66,0);
-});
-add(body,SP(0.2,black,1.6,0.8,1),0,1.02,0);
-/* torse */
-add(body,SP(1,white,0.62,0.6,0.5),0,1.6,0);
-var belt=add(body,new THREE.Mesh(new THREE.TorusGeometry(0.44,0.035,12,64),black),0,1.17,0);belt.rotation.x=Math.PI/2;belt.scale.set(1,0.82,1);
-add(body,SP(1,black,0.2,0.2,0.04),0,1.62,0.495);
-var chest=add(body,new THREE.Mesh(new THREE.CircleGeometry(0.15,40),glowMat),0,1.62,0.536);
-add(body,new THREE.Mesh(new THREE.CylinderGeometry(0.14,0.17,0.2,24),black),0,2.2,0);
-/* bras */
-function makeArm(s){var g=new THREE.Group();g.position.set(s*0.8,1.95,0);
-add(g,SP(0.17,black),0,0,0);
-add(g,CAP(0.115,0.26,white),0,-0.3,0);
-var el=new THREE.Group();el.position.set(0,-0.57,0);g.add(el);
-add(el,SP(0.115,black),0,0,0);
-add(el,CAP(0.105,0.24,white),0,-0.23,0);
-add(el,SP(0.15,grey),0,-0.47,0);
+/* corps type humanoide */
+var dg=phys(0x3b464a,0.34,0.3,0.7);
+function leg(s){
+add(body,SP(0.17,dg),s*0.28,0.99,0);
+add(body,CAP(0.135,0.2,white),s*0.29,0.78,0);
+add(body,SP(0.15,dg),s*0.3,0.55,0.01);
+add(body,CAP(0.12,0.17,white),s*0.3,0.34,0);
+var an=add(body,new THREE.Mesh(new THREE.TorusGeometry(0.125,0.03,12,32),dg),s*0.3,0.36,0);an.rotation.x=Math.PI/2;
+add(body,SP(0.3,white,1,0.55,1.5),s*0.31,0.16,0.1);
+add(body,SP(0.32,dg,1,0.17,1.52),s*0.31,0.04,0.1);
+add(body,SP(0.15,dg,1,0.5,1.0),s*0.31,0.3,-0.12);
+add(body,SP(0.2,grey,1,0.45,0.9),s*0.31,0.17,0.36);
+}
+leg(-1);leg(1);
+/* bassin et taille */
+add(body,SP(1,white,0.5,0.22,0.4),0,0.98,0);
+add(body,SP(1,black,0.45,0.1,0.4),0,1.14,0);
+add(body,SP(1,white,0.46,0.36,0.38),0,1.4,0);
+/* poitrail large */
+add(body,SP(1,white,0.7,0.5,0.5),0,1.82,0);
+add(body,SP(1,black,0.4,0.18,0.05),0,1.6,0.47);
+var chest=add(body,new THREE.Mesh(new THREE.CircleGeometry(0.055,32),glowMat),0,1.6,0.524);
+var collar=add(body,new THREE.Mesh(new THREE.TorusGeometry(0.17,0.03,12,40),glowMat),0,2.22,0);collar.rotation.x=Math.PI/2;
+add(body,new THREE.Mesh(new THREE.CylinderGeometry(0.13,0.17,0.2,24),dg),0,2.2,0);
+/* bras : epaule grise, coude, poignet cannele, main a doigts */
+function makeHand(s){var h=new THREE.Group();
+add(h,SP(0.12,white,1,1.1,0.6),0,-0.1,0);
+for(var i=0;i<4;i++){var f=CAP(0.027,0.085,white);f.position.set((i-1.5)*0.056,-0.215-((i===1||i===2)?0.02:0),0);f.rotation.z=-(i-1.5)*0.1;h.add(f);}
+var th=CAP(0.03,0.07,white);th.position.set(-s*0.125,-0.12,0);th.rotation.z=s*0.85;h.add(th);
+h.scale.setScalar(1.12);return h;}
+function makeArm(s){var g=new THREE.Group();g.position.set(s*0.8,2.0,0);
+add(g,SP(0.19,dg),0,0,0);
+add(g,CAP(0.125,0.24,white),0,-0.3,0);
+var el=new THREE.Group();el.position.set(0,-0.58,0);g.add(el);
+add(el,SP(0.125,dg),0,0,0);
+add(el,CAP(0.11,0.2,white),0,-0.24,0);
+[-0.38,-0.425,-0.47].forEach(function(y){var r=add(el,new THREE.Mesh(new THREE.TorusGeometry(0.112,0.014,10,32),dg),0,y,0);r.rotation.x=Math.PI/2;});
+add(el,makeHand(s),0,-0.5,0);
 body.add(g);g.userData.el=el;return g;}
 var armL=makeArm(-1),armR=makeArm(1);
 /* tete ronde */
