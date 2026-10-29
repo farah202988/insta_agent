@@ -113,8 +113,9 @@ background:linear-gradient(180deg,#e0201b,#7a0f0c 78%,transparent)}
 .eye{animation:blink 5s infinite;transform-box:fill-box;transform-origin:center}
 .robot.shy .eye{animation:none;transform:scaleY(.08);transition:transform .25s}
 .robot .eye{transition:transform .25s}
-.stage{cursor:default}
-.robot-frame{position:relative;z-index:1;width:min(470px,100%);height:min(74vh,610px);border:0}
+.stage{cursor:crosshair}
+.stage canvas{position:absolute;inset:0;width:100%;height:100%;opacity:0;transition:opacity .7s;touch-action:pan-y}
+.stage canvas.on{opacity:1}
 @keyframes float{50%{transform:translateY(-10px)}}
 @keyframes blink{0%,94%,100%{transform:scaleY(1)}97%{transform:scaleY(.1)}}
 .panel{width:100%;max-width:450px;justify-self:center}
@@ -141,7 +142,7 @@ display:flex;justify-content:center;align-items:center;gap:12px;background:var(-
 .secure{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:12px;margin:0 0 18px}
 .secure-dot{width:7px;height:7px;border-radius:50%;background:var(--mint);box-shadow:0 0 10px var(--mint)}
 .form-foot{margin-top:22px;padding-top:14px;border-top:1px solid var(--line);color:#8fa39bb0;font-size:12px;text-align:center}
-@media(max-width:860px){.layout{grid-template-columns:1fr;gap:0}.stage{min-height:290px;order:-1}.robot{width:min(250px,64%)}.robot-frame{width:min(300px,82%);height:min(38vh,300px)}.beam{width:60px}}
+@media(max-width:860px){.layout{grid-template-columns:1fr;gap:0}.stage{min-height:290px;order:-1}.robot{width:min(250px,64%)}.beam{width:60px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
 """
 
@@ -172,9 +173,160 @@ AUTH_ROBOT = """<svg class="robot" viewBox="0 0 400 460" xmlns="http://www.w3.or
 
 AUTH_JS = """
 (function(){
-var f=document.getElementById('login-form'),b=document.getElementById('toggle-pw'),p=document.getElementById('password');
-b.addEventListener('click',function(){var s=p.type==='password';p.type=s?'text':'password';b.setAttribute('aria-label',s?'Masquer le mot de passe':'Afficher le mot de passe');});
+var f=document.getElementById('login-form'),b=document.getElementById('toggle-pw'),p=document.getElementById('password'),u=document.getElementById('username');
+b.addEventListener('click',function(){var s=p.type==='password';p.type=s?'text':'password';b.setAttribute('aria-label',s?'Masquer le mot de passe':'Afficher le mot de passe');robot.classList.toggle('shy',document.activeElement===p&&p.type==='password');});
 f.addEventListener('submit',function(){var s=document.getElementById('submit-btn');s.disabled=true;s.firstElementChild.textContent='Connexion…';});
+
+var robot=document.querySelector('.robot'),head=document.getElementById('bot-head'),eyes=document.getElementById('bot-eyes'),body=document.getElementById('bot-body');
+var reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+var t={x:0,y:0},c={x:0,y:0};
+function clamp(v){return Math.max(-1,Math.min(1,v));}
+function aim(x,y){var r=robot.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height*0.4;
+t.x=clamp((x-cx)/(window.innerWidth*0.5));t.y=clamp((y-cy)/(window.innerHeight*0.5));}
+window.addEventListener('pointermove',function(e){aim(e.clientX,e.clientY);},{passive:true});
+document.addEventListener('mouseleave',function(){t.x=0;t.y=0;});
+p.addEventListener('focus',function(){if(p.type==='password')robot.classList.add('shy');});
+p.addEventListener('blur',function(){robot.classList.remove('shy');});
+u.addEventListener('input',function(){var r=u.getBoundingClientRect();aim(r.left+r.width*Math.min(1,u.value.length/24),r.top);});
+robot.addEventListener('click',function(){robot.animate([{transform:'translateY(0) scale(1)'},{transform:'translateY(-22px) scale(1.04)'},{transform:'translateY(0) scale(1)'}],{duration:480,easing:'cubic-bezier(.3,1.6,.5,1)'});});
+function tick(){
+c.x+=(t.x-c.x)*0.12;c.y+=(t.y-c.y)*0.12;
+head.setAttribute('transform','translate('+(c.x*10).toFixed(2)+' '+(c.y*6).toFixed(2)+') rotate('+(c.x*11).toFixed(2)+' 200 255)');
+eyes.setAttribute('transform','translate('+(c.x*10).toFixed(2)+' '+(c.y*8).toFixed(2)+')');
+body.setAttribute('transform','translate('+(c.x*-4).toFixed(2)+' '+(c.y*-1.5).toFixed(2)+')');
+requestAnimationFrame(tick);}
+if(!reduce)tick();
+})();
+"""
+
+
+AUTH_IMPORTMAP = '<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>'
+
+AUTH_3D_JS = """
+(async function(){
+var stage=document.querySelector('.stage'),svg=document.querySelector('.robot'),pw=document.getElementById('password'),un=document.getElementById('username');
+if(!stage)return;
+var THREE,RBG,ENV;
+try{
+THREE=await import('three');
+RBG=await import('three/addons/geometries/RoundedBoxGeometry.js');
+ENV=await import('three/addons/environments/RoomEnvironment.js');
+}catch(e){return;}
+var renderer;
+try{renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});}catch(e){return;}
+renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.0;
+var canvas=renderer.domElement;stage.appendChild(canvas);
+var scene=new THREE.Scene();
+var pm=new THREE.PMREMGenerator(renderer);
+scene.environment=pm.fromScene(new ENV.RoomEnvironment(),0.04).texture;
+var camera=new THREE.PerspectiveCamera(30,1,0.1,80);
+camera.position.set(0,2.5,9.2);camera.lookAt(0,1.75,0);
+
+var key=new THREE.DirectionalLight(0xf2f6f0,1.5);key.position.set(3,6,6);scene.add(key);
+var red=new THREE.PointLight(0xe0201b,70,16);red.position.set(-4,2.5,-1.5);scene.add(red);
+var red2=new THREE.PointLight(0xff3b34,25,10);red2.position.set(3,0.6,4);scene.add(red2);
+
+function mat(c,m,r){return new THREE.MeshStandardMaterial({color:c,metalness:m,roughness:r});}
+var light=mat(0xd3e3dc,0.12,0.42),lightD=mat(0xa9c4ba,0.2,0.4),dark=mat(0x0a1210,0.55,0.32),joint=mat(0x2b4a41,0.4,0.4);
+var visorM=new THREE.MeshPhysicalMaterial({color:0x030605,metalness:0.6,roughness:0.06,clearcoat:1,clearcoatRoughness:0.04});
+var redGlow=new THREE.MeshBasicMaterial({color:0xff3b34}),white=new THREE.MeshBasicMaterial({color:0xffffff});
+function RB(w,h,d,r,m){return new THREE.Mesh(new RBG.RoundedBoxGeometry(w,h,d,5,r),m);}
+function SP(r,m){return new THREE.Mesh(new THREE.SphereGeometry(r,24,24),m);}
+function CAP(r,l,m){return new THREE.Mesh(new THREE.CapsuleGeometry(r,l,8,16),m);}
+function add(p,o,x,y,z){o.position.set(x||0,y||0,z||0);p.add(o);return o;}
+
+/* contour arc-en-ciel de l'ecran (texture canvas) */
+function rimTexture(){
+var c=document.createElement('canvas');c.width=700;c.height=520;var g=c.getContext('2d');
+var gr=g.createLinearGradient(40,40,660,480);
+gr.addColorStop(0,'#ff2a22');gr.addColorStop(0.3,'#ff8a3c');gr.addColorStop(0.55,'#f7d56a');gr.addColorStop(0.8,'#7fe3c0');gr.addColorStop(1,'#5fa8ff');
+g.shadowColor='rgba(255,90,60,0.9)';g.shadowBlur=34;g.strokeStyle=gr;g.lineWidth=36;
+var x=36,y=36,w=628,h=448,r=120;
+g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath();g.stroke();g.stroke();
+var t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=4;return t;}
+
+var root=new THREE.Group();root.rotation.y=0.45;scene.add(root);
+/* socle cube noir */
+add(root,RB(2.5,0.7,2.5,0.08,dark),0,-0.35,0);
+add(root,RB(2.54,0.035,2.54,0.015,redGlow),0,-0.02,0);
+/* corps */
+var body=new THREE.Group();root.add(body);
+[-1,1].forEach(function(s){
+add(body,RB(0.36,0.2,0.54,0.09,light),s*0.26,0.1,0.07);
+add(body,new THREE.Mesh(new THREE.CylinderGeometry(0.075,0.075,0.5,16),lightD),s*0.26,0.45,0);
+add(body,SP(0.105,joint),s*0.26,0.72,0);
+add(body,new THREE.Mesh(new THREE.CylinderGeometry(0.085,0.085,0.35,16),lightD),s*0.26,0.92,0);
+});
+add(body,RB(0.82,0.22,0.5,0.09,dark),0,1.1,0);
+add(body,RB(0.98,0.85,0.62,0.24,light),0,1.65,0);
+add(body,RB(0.4,0.34,0.05,0.09,dark),0,1.66,0.31);
+var chestRing=add(body,new THREE.Mesh(new THREE.TorusGeometry(0.1,0.02,12,40),redGlow),0,1.66,0.34);
+add(body,new THREE.Mesh(new THREE.CylinderGeometry(0.11,0.13,0.14,20),dark),0,2.1,0);
+/* bras fins articules */
+function makeArm(s){var g=new THREE.Group();g.position.set(s*0.62,1.95,0);
+add(g,SP(0.13,joint),0,0,0);
+add(g,CAP(0.075,0.3,lightD),0,-0.3,0);
+add(g,SP(0.095,joint),0,-0.54,0);
+add(g,CAP(0.07,0.24,lightD),0,-0.73,0);
+add(g,SP(0.115,light),0,-0.95,0);
+body.add(g);return g;}
+var armL=makeArm(-1),armR=makeArm(1);
+/* grosse tete */
+var head=new THREE.Group();head.position.set(0,2.2,0);body.add(head);
+add(head,RB(2.0,1.55,1.25,0.42,light),0,0.9,0);
+add(head,RB(1.72,0.5,1.12,0.22,dark),0,1.62,-0.05);
+add(head,RB(1.62,1.16,0.12,0.32,visorM),0,0.76,0.64);
+var rim=add(head,new THREE.Mesh(new THREE.PlaneGeometry(1.75,1.3),new THREE.MeshBasicMaterial({map:rimTexture(),transparent:true,toneMapped:false,depthWrite:false})),0,0.76,0.707);
+var eyes=new THREE.Group();eyes.position.set(0,0.76,0.72);head.add(eyes);
+[-0.27,0.27].forEach(function(x){var e=add(eyes,CAP(0.055,0.15,white),x,0,0);e.scale.z=0.3;});
+[-1,1].forEach(function(s){
+var ear=add(head,new THREE.Mesh(new THREE.CylinderGeometry(0.3,0.3,0.2,32),lightD),s*1.08,0.82,0);ear.rotation.z=Math.PI/2;
+var cap=add(head,new THREE.Mesh(new THREE.CylinderGeometry(0.19,0.19,0.03,32),dark),s*1.19,0.82,0);cap.rotation.z=Math.PI/2;
+var dot=add(head,new THREE.Mesh(new THREE.CylinderGeometry(0.07,0.07,0.035,24),redGlow),s*1.2,0.82,0);dot.rotation.z=Math.PI/2;
+});
+
+function resize(){var w=stage.clientWidth||400,h=stage.clientHeight||400;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}
+if(window.ResizeObserver){new ResizeObserver(resize).observe(stage);}else{window.addEventListener('resize',resize);}
+resize();
+
+function clamp(v){return Math.max(-1,Math.min(1,v));}
+var tgt={x:0,y:0},cur={x:0,y:0},shy=0,shyT=0,blinkAt=2,blinkStart=-1,waveUntil=0,armRz=0.3,armLz=-0.3,jump=0;
+var reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+function aim(x,y){var r=stage.getBoundingClientRect();tgt.x=clamp((x-(r.left+r.width/2))/(window.innerWidth*0.5));tgt.y=clamp((y-(r.top+r.height*0.3))/(window.innerHeight*0.5));}
+window.addEventListener('pointermove',function(e){aim(e.clientX,e.clientY);},{passive:true});
+document.addEventListener('mouseleave',function(){tgt.x=0;tgt.y=0;});
+if(un)un.addEventListener('input',function(){tgt.x=clamp(0.25+Math.min(un.value.length,24)/24*0.6);tgt.y=0.1;});
+if(pw){pw.addEventListener('focus',function(){shyT=pw.type==='password'?1:0;});pw.addEventListener('blur',function(){shyT=0;});}
+var ray=new THREE.Raycaster(),ndc=new THREE.Vector2();
+canvas.addEventListener('pointerdown',function(e){var r=canvas.getBoundingClientRect();
+ndc.set(((e.clientX-r.left)/r.width)*2-1,-((e.clientY-r.top)/r.height)*2+1);ray.setFromCamera(ndc,camera);
+if(ray.intersectObject(body,true).length){waveUntil=clock.getElapsedTime()+1.6;jump=1;}});
+var clock=new THREE.Clock(),shown=false;
+
+function frame(){
+var t=clock.getElapsedTime();
+cur.x+=(tgt.x-cur.x)*0.08;cur.y+=(tgt.y-cur.y)*0.08;shy+=(shyT-shy)*0.12;jump*=0.92;
+body.position.y=Math.sin(t*1.6)*0.035+Math.sin(Math.min(1,jump)*Math.PI)*0.18*(jump>0.02?1:0);
+body.rotation.y=cur.x*0.22;
+head.rotation.y=cur.x*0.8*(1-shy*0.6);
+head.rotation.x=cur.y*0.4+shy*0.3;
+head.rotation.z=-cur.x*0.05;
+eyes.position.x=cur.x*0.2;eyes.position.y=0.76-cur.y*0.12;
+if(t>blinkAt){blinkStart=t;blinkAt=t+2.5+Math.random()*3;}
+var b=t-blinkStart,bl=(b>=0&&b<0.18)?1-Math.sin(b/0.18*Math.PI)*0.92:1;
+eyes.scale.y=Math.max(Math.min(bl,1-shy*0.93),0.06);
+var w=t<waveUntil;
+armRz+=((w?2.6+Math.sin(t*12)*0.3:0.3+Math.sin(t*1.6)*0.03)-armRz)*0.15;
+armLz+=((shy>0.5?-2.3:-0.3-Math.sin(t*1.6)*0.03)-armLz)*0.12;
+armR.rotation.z=armRz;armL.rotation.z=armLz;
+chestRing.rotation.z=t*0.8;
+red.intensity=65+Math.sin(t*1.2)*8;
+renderer.render(scene,camera);
+if(!shown){shown=true;canvas.classList.add('on');if(svg)svg.style.display='none';}
+if(!reduce)requestAnimationFrame(frame);
+}
+frame();
 })();
 """
 
@@ -186,10 +338,10 @@ def auth_page(error=""):
 <meta name="theme-color" content="#06100e">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;800&family=Inter:wght@300;400;500;600&display=swap">
-<style>{css}</style></head><body>
+<style>{css}</style>{importmap}</head><body>
 <header class="topbar"><div class="brand">INSTA<i>·</i>AGENT</div><span>Espace propriétaire</span></header>
 <main class="layout">
-<section class="stage" aria-hidden="true"><div class="beam"></div><div class="floor"></div><iframe class="robot-frame" src="/auth/robot-3d" title="Robot InstaAgent animé" tabindex="-1"></iframe></section>
+<section class="stage" aria-hidden="true"><div class="beam"></div><div class="floor"></div>{robot}</section>
 <section class="panel">
 <div class="eyebrow">Mêmes conversations<br>Nouvelle intelligence</div>
 <h1>AGIT</h1><h2>Autrement</h2><div class="rule"></div>
@@ -207,7 +359,8 @@ def auth_page(error=""):
 </form>
 <div class="form-foot">Accès réservé à l’équipe InstaAgent.</div>
 </section></main>
-<script>{js}</script></body></html>""".format(css=AUTH_CSS, robot=AUTH_ROBOT, error=error_html, js=AUTH_JS)
+<script>{js}</script><script type="module">{js3d}</script></body></html>""".format(css=AUTH_CSS, robot=AUTH_ROBOT, error=error_html, js=AUTH_JS,
+                   importmap=AUTH_IMPORTMAP, js3d=AUTH_3D_JS)
 
 
 @auth_router.get("/login", response_class=HTMLResponse)
@@ -219,18 +372,6 @@ def login_page():
 def auth_mascot():
     path = os.path.join(os.path.dirname(__file__), "static", "instaagent-mascot.png")
     return FileResponse(path, media_type="image/png")
-
-
-@auth_router.get("/auth/robot-3d")
-def auth_robot_3d():
-    path = os.path.join(os.path.dirname(__file__), "static", "login-robot.html")
-    return FileResponse(path, media_type="text/html")
-
-
-@auth_router.get("/auth/login-robot.js")
-def auth_robot_3d_script():
-    path = os.path.join(os.path.dirname(__file__), "static", "login-robot.js")
-    return FileResponse(path, media_type="text/javascript")
 
 
 @auth_router.post("/login", response_class=HTMLResponse)
