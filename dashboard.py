@@ -93,55 +93,41 @@ STATUS_LABEL = {
 }
 
 AUTH_CSS = """
-:root{--orange:#ff7a1a;--text:#f6f3ef;--muted:#9a9691;--line:#ffffff1a}
-*{box-sizing:border-box}body{margin:0;height:100vh;overflow:hidden;background:#080807;color:var(--text);
-font:15px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;display:grid;place-items:center;padding:20px}
-.layout{width:min(1180px,100%);height:min(720px,calc(100vh - 40px));min-height:0;border:1px solid #ffffff14;
-border-radius:22px;overflow:hidden;background:#0d0d0c;box-shadow:0 32px 100px #000b;
-display:grid;grid-template-columns:1.12fr .88fr}
-.brand-panel{min-height:0;background-color:#0c0b09;background-image:linear-gradient(#ff9b2410 1px,transparent 1px),
-linear-gradient(90deg,#ff9b2410 1px,transparent 1px),radial-gradient(ellipse at 54% 42%,#46200d55,transparent 55%);
-background-size:42px 42px,42px 42px,auto;color:#fff;padding:34px 42px;display:flex;flex-direction:column;
-position:relative;overflow:hidden;border-right:1px solid #ffffff12}
-.brand-panel:before{content:"";position:absolute;width:520px;height:180px;right:-120px;top:90px;
-background:linear-gradient(115deg,transparent 35%,#ff7a1a35 48%,#ffc06a88 50%,#ff7a1a20 53%,transparent 68%);
-filter:blur(9px);transform:rotate(-12deg);pointer-events:none}
-.brand-panel:after{content:"";position:absolute;width:500px;height:500px;border:1px solid #ff8c2a20;
-border-radius:50%;left:50%;bottom:-340px;transform:translateX(-50%);box-shadow:0 0 0 38px #ff8c2a09,0 0 0 82px #ff8c2a06}
-.logo{display:flex;align-items:center;gap:11px;font-weight:750;font-size:1.05rem;position:relative;z-index:2}
-.logo-mark{width:36px;height:36px;border:1px solid #ff9b246b;border-radius:11px;background:#ff8a1a15;
-color:#ff9a3c;display:grid;place-items:center;font-size:.82rem;letter-spacing:-.05em}
-.product-tag{margin:40px 0 12px;padding:6px 10px;border:1px solid #ff9b243d;border-radius:99px;
-color:#ffc083;font-size:.68rem;font-weight:700;letter-spacing:.14em;width:max-content;position:relative;z-index:2}
-.pitch{position:relative;z-index:2;max-width:520px}.pitch h1{font-size:clamp(2.2rem,4vw,3.65rem);line-height:1.03;
-margin:0 0 18px;letter-spacing:-.055em;font-weight:720}.pitch h1 span{color:#ff9a42}
-.pitch p{color:#aaa6a0;max-width:440px;font-size:1rem;margin:0}
-.visual{position:relative;z-index:2;display:flex;align-items:center;justify-content:center;flex:1;min-height:0}
-.visual:before{content:"";position:absolute;left:0;right:0;top:50%;height:1px;
-background:linear-gradient(90deg,transparent 0,#ff8a1a45 12%,#ff8a1a45 39%,transparent 39% 61%,#ff8a1a45 61% 88%,transparent 100%)}
-.visual:after{content:"";position:absolute;top:0;bottom:50%;left:50%;width:1px;background:linear-gradient(180deg,transparent,#ff8a1a35)}
-.robot-core{position:relative;z-index:2;width:min(220px,55%);aspect-ratio:1;display:grid;place-items:center;
-border:1px solid #ff9b2438;border-radius:24px;background:radial-gradient(circle at 50% 60%,#411d0c66,#11100e 72%);
-box-shadow:0 0 36px #ff7a1a14,inset 0 0 24px #ff7a1a0a}
-.mascot{width:92%;height:92%;object-fit:contain;filter:drop-shadow(0 12px 26px #ff75172a)}
-.panel-foot{font-size:.76rem;color:#77736d;position:relative;z-index:2;letter-spacing:.02em}
-.form-panel{min-height:0;padding:38px clamp(30px,5vw,70px);display:flex;flex-direction:column;justify-content:center;background:#10100f}
-.secure{display:flex;align-items:center;gap:8px;color:#aaa49c;font-size:.76rem;margin-bottom:28px}
-.secure-dot{width:7px;height:7px;background:#62c995;border-radius:50%;box-shadow:0 0 12px #62c99588}
-.form-panel h2{font-size:1.9rem;letter-spacing:-.04em;margin:0 0 7px}.sub{color:var(--muted);margin:0 0 22px;font-size:.92rem}
-label{display:block;color:#e7e1d9;font-size:.82rem;font-weight:600;margin:13px 0 7px}
-input{width:100%;padding:13px 14px;border:1px solid #ffffff20;background:#0b0b0a;color:#fff;border-radius:9px;
+:root{--charcoal:#171717;--forest:#06110C;--crimson:#A31C1B;--text:#f4f2ef;--muted:#aaa7a2;--line:#ffffff20}
+*{box-sizing:border-box}body{margin:0;height:100vh;overflow:hidden;color:var(--text);
+font:15px/1.45 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;display:grid;place-items:center;padding:18px;
+background:radial-gradient(ellipse at 50% 0%,#12301f 0,transparent 48%),var(--forest)}
+.layout{position:relative;width:min(470px,100%);height:min(700px,calc(100vh - 36px));min-height:0;padding:24px 38px;
+border:1px solid #ffffff1a;border-radius:24px;overflow:hidden;background:var(--charcoal);box-shadow:0 30px 90px #0009;
+display:flex;flex-direction:column;align-items:center}
+.layout:before{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 35%,#a31c1b18,transparent 58%)}
+.logo{display:flex;align-items:center;justify-content:center;gap:10px;font-weight:750;font-size:1.05rem;position:relative;z-index:1}
+.logo-mark{width:34px;height:34px;border:1px solid #a31c1b88;border-radius:10px;background:#a31c1b24;
+color:#f0b9b6;display:grid;place-items:center;font-size:.78rem;letter-spacing:-.05em}
+.product-tag{margin:12px 0 8px;padding:5px 9px;border:1px solid #a31c1b70;border-radius:99px;
+color:#e4aaa7;font-size:.62rem;font-weight:700;letter-spacing:.12em;width:max-content;position:relative;z-index:1}
+.pitch{position:relative;z-index:1;text-align:center;max-width:390px}.pitch h1{font-size:clamp(1.85rem,4vw,2.25rem);line-height:1.08;
+margin:0 0 8px;letter-spacing:-.045em;font-weight:720}.pitch h1 span{color:#d55b58}
+.pitch p{color:#aaa7a2;max-width:370px;font-size:.88rem;margin:0 auto}
+.visual{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;flex:1;min-height:110px;width:100%}
+.mascot{width:170px;height:100%;max-height:170px;object-fit:contain;filter:drop-shadow(0 12px 28px #a31c1b30)}
+.secure{display:flex;align-items:center;justify-content:center;gap:8px;color:#aaa7a2;font-size:.74rem;margin:0 0 7px;position:relative;z-index:1}
+.secure-dot{width:7px;height:7px;background:#74bd89;border-radius:50%;box-shadow:0 0 10px #74bd8966}
+.auth-form{width:100%;position:relative;z-index:1}
+label{display:block;color:#e7e1d9;font-size:.8rem;font-weight:600;margin:9px 0 5px}
+input{width:100%;padding:10px 12px;border:1px solid #ffffff24;background:#101411;color:#fff;border-radius:9px;
 font:inherit;outline:none;transition:border-color .18s,box-shadow .18s}
-input:focus{border-color:var(--orange);box-shadow:0 0 0 3px #ff7a1a20}
-button{width:100%;margin-top:19px;border:0;border-radius:9px;background:linear-gradient(100deg,#ff8a24,#f06b12);
-color:#1d1008;padding:13px;font:inherit;font-weight:750;cursor:pointer;box-shadow:0 8px 26px #ff7a1a22;transition:transform .18s,filter .18s}
-button:hover{filter:brightness(1.08);transform:translateY(-1px)}
-.error{background:#2c1710;border:1px solid #87401f;color:#ffb08a;padding:11px 13px;border-radius:9px;margin:0 0 15px}
-.form-foot{margin-top:24px;padding-top:14px;border-top:1px solid #ffffff12;color:#77736d;font-size:.75rem}
-@media(max-width:760px){body{height:auto;min-height:100svh;overflow:auto;padding:0}.layout{width:100%;height:auto;min-height:100svh;
-border:0;border-radius:0;grid-template-columns:1fr}.brand-panel{min-height:430px;padding:24px 28px;border-right:0;border-bottom:1px solid #ffffff12}
-.product-tag{margin-top:34px}.pitch h1{font-size:clamp(2.3rem,11vw,3.25rem)}.visual{min-height:165px}.robot-core{width:150px;border-radius:20px}
-.form-panel{padding:34px 28px 40px}.secure{margin-bottom:20px}}
+input:focus{border-color:#a31c1b;box-shadow:0 0 0 3px #a31c1b25}
+button{width:100%;margin-top:14px;border:1px solid #bb3936;border-radius:9px;background:var(--crimson);
+color:#fff;padding:11px;font:inherit;font-weight:700;cursor:pointer;box-shadow:0 8px 22px #a31c1b30;transition:filter .18s}
+button:hover{filter:brightness(1.12)}
+.error{width:100%;position:relative;z-index:1;background:#351b1a;border:1px solid #a31c1b;color:#f4b9b7;padding:10px 12px;border-radius:9px;margin:0 0 8px}
+.form-foot{width:100%;margin-top:14px;padding-top:10px;border-top:1px solid #ffffff12;color:#817f7b;font-size:.7rem;text-align:center;position:relative;z-index:1}
+@media(max-height:680px) and (min-width:761px){.layout{height:calc(100vh - 24px);padding:16px 32px}.product-tag{margin:7px 0 5px}
+.pitch h1{font-size:1.8rem}.visual{min-height:80px}.mascot{width:130px;max-height:130px}.form-foot{margin-top:8px;padding-top:7px}}
+@media(max-width:760px){body{height:auto;min-height:100svh;overflow:auto;padding:0}.layout{width:min(470px,100%);height:auto;min-height:100svh;
+border:0;border-radius:0;padding:26px 30px 24px}.product-tag{margin-top:14px}.pitch h1{font-size:clamp(1.85rem,8vw,2.2rem)}
+.visual{min-height:155px}.mascot{width:165px;max-height:165px}.form-foot{margin-top:18px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{transition:none!important}}
 """
 
@@ -155,18 +141,16 @@ def auth_page(error=""):
 <button type="submit">Se connecter</button>"""
     return """<!doctype html><html lang="fr"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><title>Connexion · InstaAgent</title>
-<style>{css}</style></head><body><div class="layout">
-<section class="brand-panel"><div class="logo"><span class="logo-mark">IA</span>InstaAgent</div>
+<style>{css}</style></head><body><main class="layout">
+<div class="logo"><span class="logo-mark">IA</span>InstaAgent</div>
 <div class="product-tag">INSTAGRAM COMMERCE AUTOMATION</div>
 <div class="pitch"><h1>Automate your growth <span>with InstaAgent.</span></h1>
 <p>Turn every Instagram conversation into a better customer experience.</p></div>
-<div class="visual"><div class="robot-core"><img class="mascot" src="/auth/mascot.png" alt="Mascotte robot InstaAgent"></div></div>
-<div class="panel-foot">SMARTER CONVERSATIONS · BETTER CUSTOMER EXPERIENCES</div></section>
-<section class="form-panel"><div class="secure"><span class="secure-dot"></span>Accès sécurisé propriétaire</div>
-<h2>Ravi de vous revoir</h2><p class="sub">Connectez-vous pour gérer votre espace InstaAgent.</p>{error}
-<form method="post" action="/login">{fields}</form>
-<div class="form-foot">Accès réservé à l’équipe InstaAgent.</div></section>
-</div></body></html>""".format(css=AUTH_CSS, error=error_html, fields=fields)
+<div class="visual"><img class="mascot" src="/auth/mascot.png" alt="Mascotte robot InstaAgent utilisant un ordinateur"></div>
+<div class="secure"><span class="secure-dot"></span>Accès sécurisé propriétaire</div>{error}
+<form class="auth-form" method="post" action="/login">{fields}</form>
+<div class="form-foot">Accès réservé à l’équipe InstaAgent.</div>
+</main></body></html>""".format(css=AUTH_CSS, error=error_html, fields=fields)
 
 
 @auth_router.get("/login", response_class=HTMLResponse)
