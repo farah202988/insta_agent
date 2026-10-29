@@ -220,7 +220,7 @@ var scene=new THREE.Scene();
 var pm=new THREE.PMREMGenerator(renderer);
 scene.environment=pm.fromScene(new ENV.RoomEnvironment(),0.04).texture;
 var camera=new THREE.PerspectiveCamera(30,1,0.1,80);
-camera.position.set(0,2.6,9.0);camera.lookAt(0,2.05,0);
+camera.position.set(0,2.4,10.9);camera.lookAt(0,1.75,0);
 
 var key=new THREE.DirectionalLight(0xf4f8f6,1.6);key.position.set(3,6,6);scene.add(key);
 var red=new THREE.PointLight(0xe0201b,70,16);red.position.set(-4,2.5,-1.5);scene.add(red);
