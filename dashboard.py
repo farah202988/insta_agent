@@ -299,10 +299,11 @@ var collar=add(body,new THREE.Mesh(new THREE.TorusGeometry(0.17,0.03,12,40),glow
 add(body,new THREE.Mesh(new THREE.CylinderGeometry(0.13,0.17,0.2,24),dg),0,2.2,0);
 /* bras : epaule grise, coude, poignet cannele, main a doigts */
 function makeHand(s){var h=new THREE.Group();
-add(h,SP(0.12,white,1,1.1,0.6),0,-0.1,0);
-for(var i=0;i<4;i++){var f=CAP(0.027,0.085,white);f.position.set((i-1.5)*0.056,-0.215-((i===1||i===2)?0.02:0),0);f.rotation.z=-(i-1.5)*0.1;h.add(f);}
-var th=CAP(0.03,0.07,white);th.position.set(-s*0.125,-0.12,0);th.rotation.z=s*0.85;h.add(th);
-h.scale.setScalar(1.12);return h;}
+add(h,SP(0.15,white,1.1,1.0,0.62),0,-0.13,0);
+var L=[0.1,0.135,0.12,0.085];
+for(var i=0;i<4;i++){var r=0.05,f=CAP(r,L[i],white);f.position.set((i-1.5)*0.077,-0.2-(L[i]/2+r)+0.05,0);f.rotation.z=-(i-1.5)*0.1;f.scale.z=0.85;h.add(f);}
+var th=CAP(0.055,0.08,white);th.position.set(-s*0.17,-0.16,0.0);th.rotation.z=s*0.95;th.scale.z=0.85;h.add(th);
+h.scale.setScalar(1.22);return h;}
 function makeArm(s){var g=new THREE.Group();g.position.set(s*0.8,2.0,0);
 add(g,SP(0.19,dg),0,0,0);
 add(g,CAP(0.125,0.24,white),0,-0.3,0);
@@ -358,8 +359,8 @@ if(t>blinkAt){blinkStart=t;blinkAt=t+2.5+Math.random()*3;}
 var b=t-blinkStart,bl=(b>=0&&b<0.2)?1-Math.sin(b/0.2*Math.PI)*0.95:1;
 var w=(t>=waveFrom&&t<waveUntil);
 drawScreen(cur.x,cur.y,Math.min(bl,1-shy*0.95),w);
-armRz+=((w?1.45:0.22+Math.sin(t*1.6)*0.03)-armRz)*f12;
-armRe+=((w?1.57+Math.sin(t*11)*0.35:0)-armRe)*f12;armR.userData.el.rotation.z=armRe;
+armRz+=((w?1.2:0.22+Math.sin(t*1.6)*0.03)-armRz)*f12;
+armRe+=((w?1.62+Math.sin(t*11)*0.3:0)-armRe)*f12;armR.userData.el.rotation.z=armRe;
 armLz+=((shy>0.5?-0.5:-0.22-Math.sin(t*1.6)*0.03)-armLz)*f12;
 armLx+=((shy>0.5?-1.35:0)-armLx)*f12;
 armR.rotation.z=armRz;armL.rotation.z=armLz;armL.rotation.x=armLx;
