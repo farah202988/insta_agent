@@ -292,10 +292,11 @@ add(body,new THREE.Mesh(new THREE.CylinderGeometry(0.14,0.17,0.2,24),black),0,2.
 function makeArm(s){var g=new THREE.Group();g.position.set(s*0.8,1.95,0);
 add(g,SP(0.17,black),0,0,0);
 add(g,CAP(0.115,0.26,white),0,-0.3,0);
-add(g,SP(0.115,black),0,-0.57,0);
-add(g,CAP(0.105,0.24,white),0,-0.8,0);
-add(g,SP(0.15,grey),0,-1.04,0);
-body.add(g);return g;}
+var el=new THREE.Group();el.position.set(0,-0.57,0);g.add(el);
+add(el,SP(0.115,black),0,0,0);
+add(el,CAP(0.105,0.24,white),0,-0.23,0);
+add(el,SP(0.15,grey),0,-0.47,0);
+body.add(g);g.userData.el=el;return g;}
 var armL=makeArm(-1),armR=makeArm(1);
 /* tete ronde */
 var head=new THREE.Group();head.position.set(0,2.3,0);body.add(head);
@@ -316,7 +317,7 @@ if(window.ResizeObserver){new ResizeObserver(resize).observe(stage);}else{window
 resize();
 
 function clamp(v){return Math.max(-1,Math.min(1,v));}
-var tgt={x:0,y:0},cur={x:0,y:0},shy=0,shyT=0,blinkAt=2.5,blinkStart=-1,waveUntil=2.4,armRz=0.22,armLz=-0.22,armLx=0,jump=0;
+var tgt={x:0,y:0},cur={x:0,y:0},shy=0,shyT=0,blinkAt=2.5,blinkStart=-1,waveFrom=0.6,waveUntil=3.6,armRe=0,armRz=0.22,armLz=-0.22,armLx=0,jump=0;
 var reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 function aim(x,y){var r=stage.getBoundingClientRect();tgt.x=clamp((x-(r.left+r.width/2))/(window.innerWidth*0.5));tgt.y=clamp((y-(r.top+r.height*0.3))/(window.innerHeight*0.5));}
 window.addEventListener('pointermove',function(e){aim(e.clientX,e.clientY);},{passive:true});
@@ -326,12 +327,13 @@ if(pw){pw.addEventListener('focus',function(){shyT=pw.type==='password'?1:0;});p
 var ray=new THREE.Raycaster(),ndc=new THREE.Vector2();
 canvas.addEventListener('pointerdown',function(e){var r=canvas.getBoundingClientRect();
 ndc.set(((e.clientX-r.left)/r.width)*2-1,-((e.clientY-r.top)/r.height)*2+1);ray.setFromCamera(ndc,camera);
-if(ray.intersectObject(body,true).length){waveUntil=clock.getElapsedTime()+1.8;jump=1;}});
-var clock=new THREE.Clock(),shown=false;
+if(ray.intersectObject(body,true).length){waveFrom=0;waveUntil=clock.getElapsedTime()+2.2;jump=1;}});
+var clock=new THREE.Clock(),shown=false,lastT=0;
 
 function frame(){
-var t=clock.getElapsedTime();
-cur.x+=(tgt.x-cur.x)*0.08;cur.y+=(tgt.y-cur.y)*0.08;shy+=(shyT-shy)*0.12;jump*=0.92;
+var t=clock.getElapsedTime();var dt=Math.min(t-lastT,0.15);lastT=t;
+var f8=1-Math.pow(0.92,dt*60),f12=1-Math.pow(0.88,dt*60);
+cur.x+=(tgt.x-cur.x)*f8;cur.y+=(tgt.y-cur.y)*f8;shy+=(shyT-shy)*f12;jump*=Math.pow(0.92,dt*60);
 body.position.y=Math.sin(t*1.6)*0.04+Math.sin(Math.min(1,jump)*Math.PI)*0.2*(jump>0.02?1:0);
 body.rotation.y=cur.x*0.2;
 head.rotation.y=cur.x*0.8*(1-shy*0.6);
@@ -339,11 +341,12 @@ head.rotation.x=cur.y*0.38+shy*0.3;
 head.rotation.z=-cur.x*0.05;
 if(t>blinkAt){blinkStart=t;blinkAt=t+2.5+Math.random()*3;}
 var b=t-blinkStart,bl=(b>=0&&b<0.2)?1-Math.sin(b/0.2*Math.PI)*0.95:1;
-var w=t<waveUntil;
+var w=(t>=waveFrom&&t<waveUntil);
 drawScreen(cur.x,cur.y,Math.min(bl,1-shy*0.95),w);
-armRz+=((w?2.55+Math.sin(t*12)*0.3:0.22+Math.sin(t*1.6)*0.03)-armRz)*0.15;
-armLz+=((shy>0.5?-0.5:-0.22-Math.sin(t*1.6)*0.03)-armLz)*0.12;
-armLx+=((shy>0.5?-1.35:0)-armLx)*0.12;
+armRz+=((w?1.45:0.22+Math.sin(t*1.6)*0.03)-armRz)*f12;
+armRe+=((w?1.57+Math.sin(t*11)*0.35:0)-armRe)*f12;armR.userData.el.rotation.z=armRe;
+armLz+=((shy>0.5?-0.5:-0.22-Math.sin(t*1.6)*0.03)-armLz)*f12;
+armLx+=((shy>0.5?-1.35:0)-armLx)*f12;
 armR.rotation.z=armRz;armL.rotation.z=armLz;armL.rotation.x=armLx;
 bulb.material.emissiveIntensity=1.3+Math.sin(t*3)*0.7;
 chest.scale.setScalar(0.95+Math.sin(t*2.2)*0.06);
