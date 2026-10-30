@@ -373,10 +373,11 @@ var root=new THREE.Group();root.rotation.y=0.35;root.position.y=0.1;root.scale.s
 var body=new THREE.Group();root.add(body);
 /* satellites en verre autour du robot : icones de boutique */
 var orbit=new THREE.Group();scene.add(orbit);var orbitCards=[];
-var orbitPts=[];for(var oi=0;oi<=84;oi++){var oa=Math.PI*0.14+oi/84*Math.PI*0.72;orbitPts.push(new THREE.Vector3(Math.cos(oa)*2.42,2.55+Math.sin(oa)*2.25,-0.2));}
-var orbitGeo=new THREE.BufferGeometry().setFromPoints(orbitPts);
-var orbitLine=new THREE.Line(orbitGeo,new THREE.LineDashedMaterial({color:0x76dcff,transparent:true,opacity:0.36,dashSize:0.035,gapSize:0.055,depthWrite:false,toneMapped:false}));
-orbitLine.computeLineDistances();orbit.add(orbitLine);
+var orbitMat=new THREE.LineDashedMaterial({color:0x9beaff,transparent:true,opacity:0.5,dashSize:0.035,gapSize:0.055,depthWrite:false,toneMapped:false});
+function orbitArc(from,to,count){var pts=[];for(var oi=0;oi<=count;oi++){var oa=from+(to-from)*oi/count;pts.push(new THREE.Vector3(Math.cos(oa)*2.35,2.5+Math.sin(oa)*2.35,-0.2));}
+var line=new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts),orbitMat);line.computeLineDistances();orbit.add(line);}
+// Deux arcs latéraux et supérieurs, avec une ouverture derrière le bas du robot.
+orbitArc(0,Math.PI*1.25,90);orbitArc(Math.PI*1.75,Math.PI*2,24);
 function shopIcon(kind){
 var c=document.createElement('canvas');c.width=c.height=128;var g=c.getContext('2d');g.strokeStyle='#d8f7ff';g.lineWidth=6;g.lineCap='round';g.lineJoin='round';
 function path(points,close){g.beginPath();g.moveTo(points[0][0],points[0][1]);for(var n=1;n<points.length;n++)g.lineTo(points[n][0],points[n][1]);if(close)g.closePath();g.stroke();}
