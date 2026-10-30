@@ -117,6 +117,10 @@ background:linear-gradient(180deg,#e0201b,#7a0f0c 78%,transparent)}
 .stage canvas{position:absolute;inset:0;width:100%;height:100%;opacity:0;transition:opacity .7s;touch-action:pan-y}
 .stage canvas.on{opacity:1}
 @keyframes float{50%{transform:translateY(-10px)}}
+.hud{position:absolute;left:50%;top:50%;width:min(602px,140%);height:auto;transform:translate(-50%,-50%);pointer-events:none;overflow:visible}
+.hud .orb{animation:hudfloat 4.5s ease-in-out infinite}
+.hud .orb:nth-of-type(2){animation-delay:-.9s}.hud .orb:nth-of-type(3){animation-delay:-1.8s}.hud .orb:nth-of-type(4){animation-delay:-2.7s}.hud .orb:nth-of-type(5){animation-delay:-3.6s}
+@keyframes hudfloat{50%{transform:translateY(-8px)}}
 @keyframes blink{0%,94%,100%{transform:scaleY(1)}97%{transform:scaleY(.1)}}
 .panel{width:100%;max-width:450px;justify-self:center}
 .eyebrow{font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--muted);line-height:1.8}
@@ -176,6 +180,8 @@ AUTH_ROBOT = """<svg class="robot" viewBox="0 0 400 490" xmlns="http://www.w3.or
 <circle cx="200" cy="334" r="6.5" fill="none" stroke="#fff" stroke-width="3"/><circle cx="208" cy="326" r="2" fill="#fff"/>
 <path d="M150 388Q200 404 250 388" stroke="#5ff0c8" stroke-width="4" stroke-linecap="round" fill="none"/>
 </g></svg>"""
+
+AUTH_HUD = """<svg class="hud" viewBox="0 0 560 686" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><filter id="hg" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur in="SourceGraphic" stdDeviation="0" result="b"/><feDropShadow dx="0" dy="0" stdDeviation="4" flood-color="#4ccfff" flood-opacity=".7"/></filter></defs><path d="M55 300A225 225 0 0 1 505 300" fill="none" stroke="#9beaff" stroke-opacity=".5" stroke-width="2" stroke-dasharray="3 7" stroke-linecap="round"/><g class="orb"><circle cx="121" cy="141" r="34" fill="#16384b" fill-opacity=".62" stroke="#86e9ff" stroke-width="2.2" filter="url(#hg)"/><circle cx="121" cy="141" r="40" fill="none" stroke="#4ccfff" stroke-opacity=".38" stroke-width="1"/><g transform="translate(94 114) scale(.42)" fill="none" stroke="#d8f7ff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"><path d="M29 52H99V98H29Z"/><path d="M64 52V98"/><path d="M25 43H103V55H25Z"/><ellipse cx="53" cy="35" rx="12" ry="8" transform="rotate(-29 53 35)"/><ellipse cx="75" cy="35" rx="12" ry="8" transform="rotate(29 75 35)"/></g></g><g class="orb"><circle cx="280" cy="75" r="34" fill="#16384b" fill-opacity=".62" stroke="#86e9ff" stroke-width="2.2" filter="url(#hg)"/><circle cx="280" cy="75" r="40" fill="none" stroke="#4ccfff" stroke-opacity=".38" stroke-width="1"/><g transform="translate(253 48) scale(.42)" fill="none" stroke="#d8f7ff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"><path d="M36 47H92L87 96H41Z"/><path d="M47 48C47 22 81 22 81 48"/></g></g><g class="orb"><circle cx="439" cy="141" r="34" fill="#16384b" fill-opacity=".62" stroke="#86e9ff" stroke-width="2.2" filter="url(#hg)"/><circle cx="439" cy="141" r="40" fill="none" stroke="#4ccfff" stroke-opacity=".38" stroke-width="1"/><g transform="translate(412 114) scale(.42)" fill="none" stroke="#d8f7ff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"><path d="M49 25L40 38L28 47L39 59L46 53L42 99H88L83 53L91 59L101 47L87 38L77 25L68 36H58Z"/></g></g><g class="orb"><circle cx="55" cy="300" r="34" fill="#16384b" fill-opacity=".62" stroke="#86e9ff" stroke-width="2.2" filter="url(#hg)"/><circle cx="55" cy="300" r="40" fill="none" stroke="#4ccfff" stroke-opacity=".38" stroke-width="1"/><g transform="translate(28 273) scale(.42)" fill="none" stroke="#d8f7ff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"><path d="M28 35H39L49 79H91L101 49H43"/><circle cx="57" cy="94" r="6"/><circle cx="86" cy="94" r="6"/></g></g><g class="orb"><circle cx="505" cy="300" r="34" fill="#16384b" fill-opacity=".62" stroke="#86e9ff" stroke-width="2.2" filter="url(#hg)"/><circle cx="505" cy="300" r="40" fill="none" stroke="#4ccfff" stroke-opacity=".38" stroke-width="1"/><g transform="translate(478 273) scale(.42)" fill="none" stroke="#d8f7ff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"><path d="M28 74Q48 70 57 47L68 65Q78 77 99 79V91H33Q26 88 28 74Z"/><path d="M56 51L54 88"/></g></g></svg>"""
 
 AUTH_JS = """
 (function(){
@@ -514,7 +520,7 @@ for(var j=0;j<NP;j++){var q=pseed[j],k=(t*q.s+q.o)%1,rd=(0.08+1.0*k)*q.r;ppos[j*
 pgeo.attributes.position.needsUpdate=true;waves.rotation.y=t*0.06;for(var hi=0;hi<hudL.length;hi++)hudL[hi].rotation.y=t*hudL[hi].userData.sp;
 var rk=(t*0.55)%1;rip.scale.setScalar(0.5+rk*1.7);ripM.opacity=0.82*(1-rk);
 renderer.render(scene,camera);
-if(!shown){shown=true;canvas.classList.add('on');if(svg)svg.style.display='none';}
+if(!shown){shown=true;canvas.classList.add('on');if(svg)svg.style.display='none';var hud=document.querySelector('.hud');if(hud)hud.style.display='none';}
 if(!reduce)requestAnimationFrame(frame);
 }
 frame();
@@ -532,7 +538,7 @@ def auth_page(error=""):
 <style>{css}</style>{importmap}</head><body>
 <header class="topbar"><div class="brand">INSTA<i>·</i>AGENT</div><span>Espace propriétaire</span></header>
 <main class="layout">
-<section class="stage" aria-hidden="true"><div class="beam"></div><div class="floor"></div>{robot}</section>
+<section class="stage" aria-hidden="true"><div class="beam"></div><div class="floor"></div>{robot}{hud}</section>
 <section class="panel">
 <div class="eyebrow">Mêmes conversations<br>Nouvelle intelligence</div>
 <h1>AGIT</h1><h2>Autrement</h2><div class="rule"></div>
@@ -550,7 +556,7 @@ def auth_page(error=""):
 </form>
 <div class="form-foot">Accès réservé à l’équipe InstaAgent.</div>
 </section></main>
-<script>{js}</script><script type="module">{js3d}</script></body></html>""".format(css=AUTH_CSS, robot=AUTH_ROBOT, error=error_html, js=AUTH_JS,
+<script>{js}</script><script type="module">{js3d}</script></body></html>""".format(css=AUTH_CSS, robot=AUTH_ROBOT, hud=AUTH_HUD, error=error_html, js=AUTH_JS,
                    importmap=AUTH_IMPORTMAP, js3d=AUTH_3D_JS)
 
 
