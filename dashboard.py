@@ -211,6 +211,7 @@ AUTH_IMPORTMAP = '<script type="importmap">{"imports":{"three":"https://cdn.jsde
 AUTH_3D_JS = """
 (async function(){
 var stage=document.querySelector('.stage'),svg=document.querySelector('.robot'),pw=document.getElementById('password'),un=document.getElementById('username');
+console.log('InstaAgent robot v10 : lumiere tres douce');
 if(!stage)return;
 var THREE,ENV;
 try{
@@ -230,7 +231,7 @@ camera.position.set(0,5.4,12.8);camera.lookAt(0,2.3,0);
 
 var key=new THREE.DirectionalLight(0xf4f8f6,2.1);key.position.set(3,6,6);scene.add(key);
 var red=new THREE.PointLight(0xe0201b,26,16);red.position.set(-4,2.5,-1.5);scene.add(red);
-var cyanL=new THREE.PointLight(0x62eaff,18,7);cyanL.position.set(0,1.4,0.5);scene.add(cyanL);
+var cyanL=new THREE.PointLight(0x62eaff,11,7);cyanL.position.set(0,1.4,0.5);scene.add(cyanL);
 var mintL=new THREE.PointLight(0x5ff0c8,26,10);mintL.position.set(3,1.5,3);scene.add(mintL);
 
 var GLOW='#5ff0c8';
@@ -306,27 +307,27 @@ var hologram=new THREE.Group();hologram.position.set(0,0.03,0);scene.add(hologra
 var r1=add(hologram,new THREE.Mesh(new THREE.TorusGeometry(0.78,0.022,12,96),holo),0,0,0);r1.rotation.x=Math.PI/2;
 var r2=add(hologram,new THREE.Mesh(new THREE.TorusGeometry(1.08,0.009,10,96),holo),0,0.01,0);r2.rotation.x=Math.PI/2;
 var r3=add(hologram,new THREE.Mesh(new THREE.TorusGeometry(0.46,0.014,10,80),holo),0,0.005,0);r3.rotation.x=Math.PI/2;
-var glowD=add(hologram,new THREE.Mesh(new THREE.CircleGeometry(1.2,64),new THREE.MeshBasicMaterial({color:0x2ad4ff,transparent:true,opacity:0.1,depthWrite:false,toneMapped:false})),0,0.002,0);glowD.rotation.x=-Math.PI/2;
-var glowC=add(hologram,new THREE.Mesh(new THREE.CircleGeometry(0.4,48),new THREE.MeshBasicMaterial({color:0x9ff4ff,transparent:true,opacity:0.22,depthWrite:false,toneMapped:false})),0,0.004,0);glowC.rotation.x=-Math.PI/2;
-var NP=80,pgeo=new THREE.BufferGeometry(),ppos=new Float32Array(NP*3),pseed=[];
+var glowD=add(hologram,new THREE.Mesh(new THREE.CircleGeometry(1.2,64),new THREE.MeshBasicMaterial({color:0x2ad4ff,transparent:true,opacity:0.06,depthWrite:false,toneMapped:false})),0,0.002,0);glowD.rotation.x=-Math.PI/2;
+var glowC=add(hologram,new THREE.Mesh(new THREE.CircleGeometry(0.4,48),new THREE.MeshBasicMaterial({color:0x9ff4ff,transparent:true,opacity:0.08,depthWrite:false,toneMapped:false})),0,0.004,0);glowC.rotation.x=-Math.PI/2;
+var NP=36,pgeo=new THREE.BufferGeometry(),ppos=new Float32Array(NP*3),pseed=[];
 for(var pi=0;pi<NP;pi++){pseed.push({a:Math.random()*6.283,r:0.3+Math.random()*0.7,s:0.22+Math.random()*0.3,o:Math.random()});}
 pgeo.setAttribute('position',new THREE.BufferAttribute(ppos,3));
-var parts=new THREE.Points(pgeo,new THREE.PointsMaterial({color:0xbff6ff,size:0.028,transparent:true,opacity:0.55,depthWrite:false,blending:THREE.AdditiveBlending,toneMapped:false}));
+var parts=new THREE.Points(pgeo,new THREE.PointsMaterial({color:0xbff6ff,size:0.026,transparent:true,opacity:0.4,depthWrite:false,blending:THREE.AdditiveBlending,toneMapped:false}));
 parts.frustumCulled=false;hologram.add(parts);
 var ripM=new THREE.MeshBasicMaterial({color:0x9ff4ff,transparent:true,opacity:0.6,depthWrite:false,toneMapped:false});
 var rip=add(hologram,new THREE.Mesh(new THREE.TorusGeometry(0.5,0.012,8,80),ripM),0,0.006,0);rip.rotation.x=Math.PI/2;
-var NR=70,rpos=new Float32Array(NR*6),rcol=new Float32Array(NR*6);
+var NR=26,rpos=new Float32Array(NR*6),rcol=new Float32Array(NR*6);
 for(var ri=0;ri<NR;ri++){var ra=Math.random()*6.283,rt=0.08+Math.random()*1.3,rh=1.0+Math.random()*0.8,rb=ri*6,br=0.35+Math.random()*0.65;
-rpos[rb]=Math.cos(ra)*0.12;rpos[rb+1]=0.02;rpos[rb+2]=Math.sin(ra)*0.12;rpos[rb+3]=Math.cos(ra)*rt;rpos[rb+4]=rh;rpos[rb+5]=Math.sin(ra)*rt;
-rcol[rb]=0.2*br;rcol[rb+1]=0.38*br;rcol[rb+2]=0.5*br;}
+rpos[rb]=Math.cos(ra)*0.35;rpos[rb+1]=0.02;rpos[rb+2]=Math.sin(ra)*0.35;rpos[rb+3]=Math.cos(ra)*rt;rpos[rb+4]=rh;rpos[rb+5]=Math.sin(ra)*rt;
+rcol[rb]=0.1*br;rcol[rb+1]=0.22*br;rcol[rb+2]=0.3*br;}
 var rgeo=new THREE.BufferGeometry();rgeo.setAttribute('position',new THREE.BufferAttribute(rpos,3));rgeo.setAttribute('color',new THREE.BufferAttribute(rcol,3));
 var rays=new THREE.LineSegments(rgeo,new THREE.LineBasicMaterial({vertexColors:true,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,toneMapped:false}));rays.frustumCulled=false;hologram.add(rays);
 var gcv=document.createElement('canvas');gcv.width=gcv.height=128;var gcx=gcv.getContext('2d'),ggr=gcx.createRadialGradient(64,64,0,64,64,64);
 ggr.addColorStop(0,'rgba(255,255,255,1)');ggr.addColorStop(0.2,'rgba(150,240,255,0.7)');ggr.addColorStop(0.55,'rgba(60,170,255,0.18)');ggr.addColorStop(1,'rgba(60,170,255,0)');gcx.fillStyle=ggr;gcx.fillRect(0,0,128,128);
 var gtex=new THREE.CanvasTexture(gcv);gtex.colorSpace=THREE.SRGBColorSpace;
-var coreS=new THREE.Sprite(new THREE.SpriteMaterial({map:gtex,blending:THREE.AdditiveBlending,depthWrite:false,transparent:true,opacity:0.45,toneMapped:false}));coreS.scale.set(0.9,0.9,1);coreS.position.set(0,0.16,0);hologram.add(coreS);
+var coreS=new THREE.Sprite(new THREE.SpriteMaterial({map:gtex,blending:THREE.AdditiveBlending,depthWrite:false,transparent:true,opacity:0.12,toneMapped:false}));coreS.scale.set(0.6,0.6,1);coreS.position.set(0,0.16,0);hologram.add(coreS);
 var waves=new THREE.Group();scene.add(waves);
-for(var wi=0;wi<6;wi++){var wp=[],wc=[],wph=Math.random()*6.28,wa=wi/6*6.283,wr=0.9+Math.random()*1.0,wl=1.2+Math.random()*1.3;
+for(var wi=0;wi<0;wi++){var wp=[],wc=[],wph=Math.random()*6.28,wa=wi/6*6.283,wr=0.9+Math.random()*1.0,wl=1.2+Math.random()*1.3;
 for(var wu=0;wu<=40;wu++){var wf=wu/40,ang=wa+wf*1.6,rr2=wr+wf*wl*0.5,fa=Math.sin(wf*Math.PI);
 wp.push(Math.cos(ang)*rr2,0.03+wf*(0.5+(wi%4)*0.35)+Math.sin(wf*9+wph)*0.06,Math.sin(ang)*rr2*0.6);wc.push(0.06*fa,0.16*fa,0.22*fa);}
 var wg=new THREE.BufferGeometry();wg.setAttribute('position',new THREE.Float32BufferAttribute(wp,3));wg.setAttribute('color',new THREE.Float32BufferAttribute(wc,3));
@@ -334,10 +335,10 @@ waves.add(new THREE.Line(wg,new THREE.LineBasicMaterial({vertexColors:true,trans
 var bcv=document.createElement('canvas');bcv.width=4;bcv.height=256;var bcx=bcv.getContext('2d'),bgr=bcx.createLinearGradient(0,0,0,256);
 bgr.addColorStop(0,'rgba(120,235,255,0)');bgr.addColorStop(0.35,'rgba(120,235,255,0.25)');bgr.addColorStop(1,'rgba(170,246,255,0.95)');bcx.fillStyle=bgr;bcx.fillRect(0,0,4,256);
 var btex=new THREE.CanvasTexture(bcv);btex.colorSpace=THREE.SRGBColorSpace;
-var beamMat=new THREE.MeshBasicMaterial({map:btex,transparent:true,side:THREE.DoubleSide,depthWrite:false,blending:THREE.AdditiveBlending,toneMapped:false,opacity:0.3});
+var beamMat=new THREE.MeshBasicMaterial({map:btex,transparent:true,side:THREE.DoubleSide,depthWrite:false,blending:THREE.AdditiveBlending,toneMapped:false,opacity:0.12});
 add(hologram,new THREE.Mesh(new THREE.CylinderGeometry(1.15,0.14,1.75,64,1,true),beamMat),0,0.875,0);
 add(hologram,new THREE.Mesh(new THREE.CylinderGeometry(0.6,0.05,1.75,48,1,true),beamMat),0,0.875,0);
-var beamW=beamMat.clone();beamW.opacity=0.1;add(hologram,new THREE.Mesh(new THREE.CylinderGeometry(1.65,0.25,1.75,64,1,true),beamW),0,0.875,0);
+var beamW=beamMat.clone();beamW.opacity=0.04;add(hologram,new THREE.Mesh(new THREE.CylinderGeometry(1.65,0.25,1.75,64,1,true),beamW),0,0.875,0);
 var root=new THREE.Group();root.rotation.y=0.35;root.position.y=0.1;root.scale.setScalar(1.1);scene.add(root);
 var body=new THREE.Group();root.add(body);
 /* corps type humanoide */
@@ -497,7 +498,7 @@ def auth_page(error=""):
 
 @auth_router.get("/login", response_class=HTMLResponse)
 def login_page():
-    return HTMLResponse(auth_page())
+    return HTMLResponse(auth_page(), headers={"Cache-Control": "no-store"})
 
 
 @auth_router.get("/auth/mascot.png")
@@ -527,7 +528,7 @@ def login(request: Request, username: str = Form(...), password: str = Form(...)
         message = "Nom d’utilisateur ou mot de passe incorrect."
         if db.dashboard_user_count() == 0 and not os.getenv("DASHBOARD_PASSWORD"):
             message = "Le compte n’est pas encore configuré. Ajoutez DASHBOARD_USER et DASHBOARD_PASSWORD dans Render."
-        return HTMLResponse(auth_page(message), status_code=401)
+        return HTMLResponse(auth_page(message), status_code=401, headers={"Cache-Control": "no-store"})
     response = RedirectResponse("/dashboard/orders", status_code=303)
     _set_session(response, request, user["id"])
     return response
