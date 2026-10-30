@@ -397,7 +397,7 @@ if(kind==='cart'){path([[28,35],[39,35],[49,79],[91,79],[101,49],[43,49]]);g.beg
 var tx=new THREE.CanvasTexture(c);tx.colorSpace=THREE.SRGBColorSpace;tx.anisotropy=4;return tx;
 }
 function glassCard(kind,x,y){
-var card=new THREE.Group();card.position.set(x,y,0.22);card.scale.setScalar(1.1);card.userData={baseY:y,phase:Math.random()*6.28};orbit.add(card);
+var card=new THREE.Group();card.position.set(x,y,0.95);card.scale.setScalar(1.1);card.userData={baseY:y,phase:Math.random()*6.28};orbit.add(card);
 var pane=new THREE.Mesh(new THREE.CircleGeometry(0.34,48),new THREE.MeshPhysicalMaterial({color:0x102b3a,emissive:0x071b28,emissiveIntensity:0.65,transparent:true,opacity:0.68,roughness:0.12,metalness:0.22,clearcoat:1,clearcoatRoughness:0.06,depthWrite:false}));card.add(pane);
 var rim=new THREE.Mesh(new THREE.TorusGeometry(0.35,0.014,10,64),new THREE.MeshBasicMaterial({color:0xb9f3ff,toneMapped:false,transparent:true,opacity:0.98,depthWrite:false}));card.add(rim);
 var halo=new THREE.Mesh(new THREE.TorusGeometry(0.42,0.005,6,64),new THREE.MeshBasicMaterial({color:0x4ccfff,toneMapped:false,transparent:true,opacity:0.48,blending:THREE.AdditiveBlending,depthWrite:false}));card.add(halo);
@@ -405,7 +405,7 @@ var shine=new THREE.Mesh(new THREE.CircleGeometry(0.16,24),new THREE.MeshBasicMa
 var icon=new THREE.Mesh(new THREE.PlaneGeometry(0.36,0.36),new THREE.MeshBasicMaterial({map:shopIcon(kind),transparent:true,toneMapped:false,depthWrite:false}));icon.position.z=0.025;card.add(icon);
 orbitCards.push(card);return card;
 }
-glassCard('gift',-1.58,3.95);glassCard('bag',0,4.65);glassCard('dress',1.58,3.95);glassCard('cart',-2.32,2.0);glassCard('shoe',2.32,2.0);
+glassCard('gift',-1.58,4.08);glassCard('bag',0,4.82);glassCard('dress',1.58,4.08);glassCard('cart',-2.32,2.0);glassCard('shoe',2.32,2.0);
 /* corps type humanoide */
 var dg=phys(0x3b464a,0.34,0.3,0.7);
 function leg(s){
