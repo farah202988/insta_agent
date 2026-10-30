@@ -110,6 +110,16 @@ padding:clamp(16px,3vw,40px) clamp(18px,4vw,48px);min-height:calc(100svh - 70px)
 background:linear-gradient(180deg,#e0201b,#7a0f0c 78%,transparent)}
 .floor{position:absolute;bottom:3%;width:92%;height:80px;background:radial-gradient(ellipse at center,#42d8ff55,transparent 70%);filter:blur(12px)}
 .robot{position:relative;width:min(430px,82%);height:auto;filter:drop-shadow(0 30px 40px #000a);animation:float 5s ease-in-out infinite}
+.glass-message{position:absolute;z-index:3;width:min(218px,36%);padding:13px 15px;border:1px solid #a9fff22b;border-radius:17px;
+background:linear-gradient(145deg,#d9fff21c,#08231f9c);backdrop-filter:blur(16px) saturate(145%);-webkit-backdrop-filter:blur(16px) saturate(145%);
+box-shadow:0 12px 34px #0005,inset 0 1px #ffffff19;color:var(--cream);pointer-events:none;animation:message-float 6s ease-in-out infinite}
+.glass-message:after{content:"";position:absolute;left:22px;bottom:-6px;width:10px;height:10px;background:#10241f;border-right:1px solid #a9fff22b;border-bottom:1px solid #a9fff22b;transform:rotate(45deg)}
+.glass-message--reply{right:0;bottom:17%;animation-delay:-3s}
+.glass-message--reply:after{left:auto;right:22px}
+.glass-message__meta{display:flex;align-items:center;gap:7px;margin-bottom:5px;color:#a6d8c9;font-size:9px;font-weight:600;letter-spacing:.13em;text-transform:uppercase}
+.glass-message__dot{width:6px;height:6px;border-radius:50%;background:#6de4bd;box-shadow:0 0 10px #6de4bd}
+.glass-message__text{font-size:12px;line-height:1.45;color:#f2f7f2}
+.glass-message--reply .glass-message__text{color:#c3f3e4}
 .eye{animation:blink 5s infinite;transform-box:fill-box;transform-origin:center}
 .robot.shy .eye{animation:none;transform:scaleY(.08);transition:transform .25s}
 .robot .eye{transition:transform .25s}
@@ -117,6 +127,7 @@ background:linear-gradient(180deg,#e0201b,#7a0f0c 78%,transparent)}
 .stage canvas{position:absolute;inset:0;width:100%;height:100%;opacity:0;transition:opacity .7s;touch-action:pan-y}
 .stage canvas.on{opacity:1}
 @keyframes float{50%{transform:translateY(-10px)}}
+@keyframes message-float{50%{transform:translateY(-7px)}}
 @keyframes blink{0%,94%,100%{transform:scaleY(1)}97%{transform:scaleY(.1)}}
 .panel{width:100%;max-width:450px;justify-self:center}
 .eyebrow{font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--muted);line-height:1.8}
@@ -142,7 +153,10 @@ display:flex;justify-content:center;align-items:center;gap:12px;background:var(-
 .secure{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:12px;margin:0 0 18px}
 .secure-dot{width:7px;height:7px;border-radius:50%;background:var(--mint);box-shadow:0 0 10px var(--mint)}
 .form-foot{margin-top:22px;padding-top:14px;border-top:1px solid var(--line);color:#8fa39bb0;font-size:12px;text-align:center}
-@media(max-width:860px){.layout{grid-template-columns:1fr;gap:0}.stage{min-height:290px;order:-1}.robot{width:min(250px,64%)}.beam{width:60px}}
+@media(max-width:860px){.layout{grid-template-columns:1fr;gap:0}.stage{min-height:290px;order:-1}.robot{width:min(250px,64%)}.beam{width:60px}
+.glass-message{width:min(180px,38%);padding:10px 11px;border-radius:14px}.glass-message--incoming{left:0;top:12%}.glass-message--reply{right:0;bottom:10%}
+.glass-message__meta{font-size:8px}.glass-message__text{font-size:10px}}
+@media(max-width:420px){.glass-message{width:36%;padding:8px 9px}.glass-message__text{font-size:9px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
 """
 
@@ -523,7 +537,9 @@ def auth_page(error=""):
 <style>{css}</style>{importmap}</head><body>
 <header class="topbar"><div class="brand">INSTA<i>·</i>AGENT</div><span>Espace propriétaire</span></header>
 <main class="layout">
-<section class="stage" aria-hidden="true"><div class="beam"></div><div class="floor"></div>{robot}</section>
+<section class="stage" aria-hidden="true"><div class="beam"></div><div class="floor"></div>{robot}
+<div class="glass-message glass-message--incoming"><div class="glass-message__meta"><span class="glass-message__dot"></span>Message client · exemple</div><div class="glass-message__text">Bonjour, cet article est disponible&nbsp;?</div></div>
+<div class="glass-message glass-message--reply"><div class="glass-message__meta"><span class="glass-message__dot"></span>InstaAgent · exemple</div><div class="glass-message__text">Je vérifie le stock pour vous.</div></div></section>
 <section class="panel">
 <div class="eyebrow">Mêmes conversations<br>Nouvelle intelligence</div>
 <h1>AGIT</h1><h2>Autrement</h2><div class="rule"></div>
