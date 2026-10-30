@@ -108,7 +108,7 @@ padding:clamp(16px,3vw,40px) clamp(18px,4vw,48px);min-height:calc(100svh - 70px)
 .stage{position:relative;display:grid;place-items:center;min-height:440px}
 .beam{position:absolute;top:-10%;left:50%;width:96px;height:78%;transform:skewX(-10deg);border-radius:4px;opacity:.8;filter:blur(1px);
 background:linear-gradient(180deg,#e0201b,#7a0f0c 78%,transparent)}
-.floor{display:none}
+.floor{position:absolute;bottom:3%;width:92%;height:80px;background:radial-gradient(ellipse at center,#42d8ff55,transparent 70%);filter:blur(12px)}
 .robot{position:relative;width:min(430px,82%);height:auto;filter:drop-shadow(0 30px 40px #000a);animation:float 5s ease-in-out infinite}
 .eye{animation:blink 5s infinite;transform-box:fill-box;transform-origin:center}
 .robot.shy .eye{animation:none;transform:scaleY(.08);transition:transform .25s}
@@ -306,7 +306,6 @@ var cam=new THREE.Mesh(new THREE.CircleGeometry(0.022,16),darkM);cam.rotation.x=
 [0.7,1.05].forEach(function(x){add(phone,new THREE.Mesh(new THREE.BoxGeometry(0.28,0.025,0.03),frameM),x,0.0,-PH/2-0.03);});
 var holo=new THREE.MeshBasicMaterial({color:0x62eaff,toneMapped:false,transparent:true,opacity:0.88});
 var hologram=new THREE.Group();hologram.position.set(0,0.03,0);scene.add(hologram);
-phone.visible=false;hologram.visible=false; // garder l’espace sous le robot vide
 var r1=add(hologram,new THREE.Mesh(new THREE.TorusGeometry(0.78,0.022,12,96),holo),0,0,0);r1.rotation.x=Math.PI/2;
 var r2=add(hologram,new THREE.Mesh(new THREE.TorusGeometry(1.08,0.009,10,96),holo),0,0.01,0);r2.rotation.x=Math.PI/2;
 var r3=add(hologram,new THREE.Mesh(new THREE.TorusGeometry(0.46,0.014,10,80),holo),0,0.005,0);r3.rotation.x=Math.PI/2;
@@ -397,7 +396,7 @@ var shine=new THREE.Mesh(new THREE.CircleGeometry(0.16,24),new THREE.MeshBasicMa
 var icon=new THREE.Mesh(new THREE.PlaneGeometry(0.34,0.34),new THREE.MeshBasicMaterial({map:shopIcon(kind),transparent:true,toneMapped:false,depthWrite:false}));icon.position.z=0.025;card.add(icon);
 orbitCards.push(card);return card;
 }
-glassCard('gift',-1.58,3.95);glassCard('bag',0,4.65);glassCard('dress',1.58,3.95);
+glassCard('gift',-1.58,3.95);glassCard('bag',0,4.65);glassCard('dress',1.58,3.95);glassCard('cart',-2.32,2.0);glassCard('shoe',2.32,2.0);
 /* corps type humanoide */
 var dg=phys(0x3b464a,0.34,0.3,0.7);
 function leg(s){
