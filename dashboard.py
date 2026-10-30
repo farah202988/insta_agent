@@ -146,14 +146,20 @@ display:flex;justify-content:center;align-items:center;gap:12px;background:var(-
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
 """
 
-AUTH_ROBOT = """<svg class="robot" viewBox="0 0 400 460" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Robot InstaAgent">
+AUTH_ROBOT = """<svg class="robot" viewBox="0 0 400 490" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Robot InstaAgent">
 <defs>
 <linearGradient id="m" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#b6ded0"/><stop offset=".55" stop-color="#7fb8a6"/><stop offset="1" stop-color="#3d7566"/></linearGradient>
 <linearGradient id="v" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1a0b0b"/><stop offset="1" stop-color="#050a09"/></linearGradient>
 <linearGradient id="rim" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e0201b"/><stop offset=".5" stop-color="#ff9a5a"/><stop offset="1" stop-color="#7fb8a6"/></linearGradient>
 <radialGradient id="g"><stop offset="0" stop-color="#ff5a50"/><stop offset="1" stop-color="#e0201b"/></radialGradient>
 </defs>
-<ellipse cx="200" cy="432" rx="150" ry="14" fill="#e0201b" opacity=".35"/>
+<defs><linearGradient id="ph" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1b2a30"/><stop offset="1" stop-color="#05090b"/></linearGradient>
+<linearGradient id="bm" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#5ff0c8" stop-opacity=".55"/><stop offset="1" stop-color="#5ff0c8" stop-opacity="0"/></linearGradient></defs>
+<path d="M52 440L348 440L384 478Q386 484 378 484L22 484Q14 484 16 478Z" fill="url(#ph)" stroke="#5ff0c8" stroke-opacity=".7" stroke-width="3"/>
+<path d="M62 444L338 444L368 474L32 474Z" fill="#0a1c24"/>
+<ellipse cx="200" cy="452" rx="96" ry="15" fill="none" stroke="#62eaff" stroke-width="4" opacity=".9"/>
+<ellipse cx="200" cy="452" rx="58" ry="9" fill="none" stroke="#62eaff" stroke-width="3" opacity=".8"/>
+<path d="M150 392L250 392L292 452L108 452Z" fill="url(#bm)"/>
 <g id="bot-head"><rect x="190" y="14" width="6" height="40" fill="#3d7566"/><circle cx="193" cy="12" r="9" fill="url(#g)"/>
 <path d="M96 180Q96 70 200 70Q304 70 304 180Q304 250 200 250Q96 250 96 180Z" fill="url(#m)"/>
 <path d="M120 120Q150 80 215 80" stroke="#fff" stroke-opacity=".5" stroke-width="6" fill="none" stroke-linecap="round"/>
@@ -163,12 +169,12 @@ AUTH_ROBOT = """<svg class="robot" viewBox="0 0 400 460" xmlns="http://www.w3.or
 <g id="bot-eyes"><ellipse class="eye" cx="162" cy="172" rx="16" ry="20" fill="url(#g)"/><ellipse class="eye" cx="238" cy="172" rx="16" ry="20" fill="url(#g)"/>
 <ellipse cx="157" cy="164" rx="4" ry="6" fill="#fff" opacity=".8"/><ellipse cx="233" cy="164" rx="4" ry="6" fill="#fff" opacity=".8"/></g></g>
 <g id="bot-body"><rect x="170" y="248" width="60" height="22" fill="#2c5a4e"/>
-<path d="M110 300Q110 266 200 266Q290 266 290 300L300 420Q200 446 100 420Z" fill="url(#m)"/>
-<path d="M84 310Q60 340 80 400" stroke="#7fb8a6" stroke-width="26" stroke-linecap="round" fill="none"/>
-<path d="M316 310Q340 340 320 400" stroke="#3d7566" stroke-width="26" stroke-linecap="round" fill="none"/>
+<path d="M110 300Q110 266 200 266Q290 266 290 300L284 376Q200 414 116 376Z" fill="url(#m)"/>
+<path d="M84 310Q60 340 82 384" stroke="#7fb8a6" stroke-width="26" stroke-linecap="round" fill="none"/>
+<path d="M316 310Q340 340 318 384" stroke="#3d7566" stroke-width="26" stroke-linecap="round" fill="none"/>
 <rect x="168" y="304" width="64" height="64" rx="18" fill="#0a1a17" stroke="url(#g)" stroke-width="4"/>
 <circle cx="200" cy="336" r="14" fill="none" stroke="#e0201b" stroke-width="4"/><circle cx="214" cy="322" r="3" fill="#e0201b"/>
-<path d="M130 392L270 392" stroke="#e0201b" stroke-width="4" stroke-linecap="round" opacity=".8"/>
+<path d="M150 388Q200 404 250 388" stroke="#5ff0c8" stroke-width="4" stroke-linecap="round" fill="none"/>
 </g></svg>"""
 
 AUTH_JS = """
@@ -220,7 +226,7 @@ var scene=new THREE.Scene();
 var pm=new THREE.PMREMGenerator(renderer);
 scene.environment=pm.fromScene(new ENV.RoomEnvironment(),0.04).texture;
 var camera=new THREE.PerspectiveCamera(30,1,0.1,80);
-camera.position.set(0,4.0,10.9);camera.lookAt(0,1.35,0);
+camera.position.set(0,4.0,10.9);camera.lookAt(0,1.2,0);
 
 var key=new THREE.DirectionalLight(0xf4f8f6,1.6);key.position.set(3,6,6);scene.add(key);
 var red=new THREE.PointLight(0xe0201b,70,16);red.position.set(-4,2.5,-1.5);scene.add(red);
@@ -285,8 +291,8 @@ var holo=new THREE.MeshBasicMaterial({color:0x62eaff,toneMapped:false,transparen
 var hologram=new THREE.Group();hologram.position.set(0,0.12,0);scene.add(hologram);
 var r1=add(hologram,new THREE.Mesh(new THREE.TorusGeometry(0.78,0.022,12,96),holo),0,0,0);r1.rotation.x=Math.PI/2;
 var r2=add(hologram,new THREE.Mesh(new THREE.TorusGeometry(1.08,0.009,10,96),holo),0,0.01,0);r2.rotation.x=Math.PI/2;
-var beamMat=new THREE.MeshBasicMaterial({color:0x39cfff,toneMapped:false,transparent:true,opacity:0.09,side:THREE.DoubleSide,depthWrite:false});
-add(hologram,new THREE.Mesh(new THREE.CylinderGeometry(0.78,0.34,1.8,48,1,true),beamMat),0,0.9,0);
+var beamMat=new THREE.MeshBasicMaterial({color:0x39cfff,toneMapped:false,transparent:true,opacity:0.16,side:THREE.DoubleSide,depthWrite:false});
+add(hologram,new THREE.Mesh(new THREE.CylinderGeometry(0.36,0.84,0.7,48,1,true),beamMat),0,0.36,0);
 var root=new THREE.Group();root.rotation.y=0.35;root.position.y=0.1;scene.add(root);
 var body=new THREE.Group();root.add(body);
 /* corps type humanoide */
@@ -302,11 +308,9 @@ add(body,SP(0.32,dg,1,0.17,1.52),s*0.31,0.04,0.1);
 add(body,SP(0.15,dg,1,0.5,1.0),s*0.31,0.3,-0.12);
 add(body,SP(0.2,grey,1,0.45,0.9),s*0.31,0.17,0.36);
 }
-leg(-1);leg(1);
-/* bassin et taille */
-add(body,SP(1,white,0.5,0.22,0.4),0,0.98,0);
-add(body,SP(1,black,0.45,0.1,0.4),0,1.14,0);
-add(body,SP(1,white,0.46,0.36,0.38),0,1.4,0);
+/* pas de jambes : le corps finit en ovale, pose sur le faisceau du telephone */
+add(body,SP(1,white,0.5,0.4,0.4),0,1.38,0);
+var baseRing=add(body,new THREE.Mesh(new THREE.TorusGeometry(0.3,0.026,12,48),glowMat),0,1.06,0);baseRing.rotation.x=Math.PI/2;
 /* poitrail large */
 add(body,SP(1,white,0.7,0.5,0.5),0,1.82,0);
 add(body,SP(1,black,0.4,0.18,0.05),0,1.6,0.47);
@@ -375,7 +379,7 @@ function frame(){
 var t=clock.getElapsedTime();var dt=Math.min(t-lastT,0.15);lastT=t;
 var f8=1-Math.pow(0.92,dt*60),f12=1-Math.pow(0.88,dt*60);
 cur.x+=(tgt.x-cur.x)*f8;cur.y+=(tgt.y-cur.y)*f8;shy+=(shyT-shy)*f12;jump*=Math.pow(0.92,dt*60);
-body.position.y=Math.sin(t*1.6)*0.04+Math.sin(Math.min(1,jump)*Math.PI)*0.2*(jump>0.02?1:0);
+body.position.y=-0.5+Math.sin(t*1.6)*0.04+Math.sin(Math.min(1,jump)*Math.PI)*0.2*(jump>0.02?1:0);
 body.rotation.y=cur.x*0.2;
 head.rotation.y=cur.x*0.8*(1-shy*0.6);
 head.rotation.x=cur.y*0.38+shy*0.3;
