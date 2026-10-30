@@ -153,7 +153,7 @@ AUTH_ROBOT = """<svg class="robot" viewBox="0 0 400 490" xmlns="http://www.w3.or
 <linearGradient id="rim" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e0201b"/><stop offset=".5" stop-color="#ff9a5a"/><stop offset="1" stop-color="#7fb8a6"/></linearGradient>
 <radialGradient id="g"><stop offset="0" stop-color="#ff5a50"/><stop offset="1" stop-color="#e0201b"/></radialGradient>
 </defs>
-<defs><linearGradient id="ph" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1b2a30"/><stop offset="1" stop-color="#05090b"/></linearGradient>
+<defs><radialGradient id="ig" cx="30%" cy="100%" r="110%"><stop offset="0" stop-color="#feda75"/><stop offset=".3" stop-color="#fa7e1e"/><stop offset=".55" stop-color="#d62976"/><stop offset=".8" stop-color="#962fbf"/><stop offset="1" stop-color="#4f5bd5"/></radialGradient><linearGradient id="ph" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1b2a30"/><stop offset="1" stop-color="#05090b"/></linearGradient>
 <linearGradient id="bm" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#5ff0c8" stop-opacity=".55"/><stop offset="1" stop-color="#5ff0c8" stop-opacity="0"/></linearGradient></defs>
 <path d="M52 440L348 440L384 478Q386 484 378 484L22 484Q14 484 16 478Z" fill="url(#ph)" stroke="#5ff0c8" stroke-opacity=".7" stroke-width="3"/>
 <path d="M62 444L338 444L368 474L32 474Z" fill="#0a1c24"/>
@@ -172,8 +172,8 @@ AUTH_ROBOT = """<svg class="robot" viewBox="0 0 400 490" xmlns="http://www.w3.or
 <path d="M110 300Q110 266 200 266Q290 266 290 300L284 376Q200 414 116 376Z" fill="url(#m)"/>
 <path d="M84 310Q60 340 82 384" stroke="#7fb8a6" stroke-width="26" stroke-linecap="round" fill="none"/>
 <path d="M316 310Q340 340 318 384" stroke="#3d7566" stroke-width="26" stroke-linecap="round" fill="none"/>
-<rect x="168" y="304" width="64" height="64" rx="18" fill="#0a1a17" stroke="url(#g)" stroke-width="4"/>
-<circle cx="200" cy="336" r="14" fill="none" stroke="#e0201b" stroke-width="4"/><circle cx="214" cy="322" r="3" fill="#e0201b"/>
+<rect x="178" y="312" width="44" height="44" rx="13" fill="url(#ig)"/><rect x="187" y="321" width="26" height="26" rx="8" fill="none" stroke="#fff" stroke-width="3"/>
+<circle cx="200" cy="334" r="6.5" fill="none" stroke="#fff" stroke-width="3"/><circle cx="208" cy="326" r="2" fill="#fff"/>
 <path d="M150 388Q200 404 250 388" stroke="#5ff0c8" stroke-width="4" stroke-linecap="round" fill="none"/>
 </g></svg>"""
 
@@ -230,7 +230,7 @@ camera.position.set(0,5.4,12.8);camera.lookAt(0,2.3,0);
 
 var key=new THREE.DirectionalLight(0xf4f8f6,2.1);key.position.set(3,6,6);scene.add(key);
 var red=new THREE.PointLight(0xe0201b,26,16);red.position.set(-4,2.5,-1.5);scene.add(red);
-var cyanL=new THREE.PointLight(0x62eaff,36,7);cyanL.position.set(0,1.4,0.5);scene.add(cyanL);
+var cyanL=new THREE.PointLight(0x62eaff,18,7);cyanL.position.set(0,1.4,0.5);scene.add(cyanL);
 var mintL=new THREE.PointLight(0x5ff0c8,26,10);mintL.position.set(3,1.5,3);scene.add(mintL);
 
 var GLOW='#5ff0c8';
@@ -306,38 +306,38 @@ var hologram=new THREE.Group();hologram.position.set(0,0.03,0);scene.add(hologra
 var r1=add(hologram,new THREE.Mesh(new THREE.TorusGeometry(0.78,0.022,12,96),holo),0,0,0);r1.rotation.x=Math.PI/2;
 var r2=add(hologram,new THREE.Mesh(new THREE.TorusGeometry(1.08,0.009,10,96),holo),0,0.01,0);r2.rotation.x=Math.PI/2;
 var r3=add(hologram,new THREE.Mesh(new THREE.TorusGeometry(0.46,0.014,10,80),holo),0,0.005,0);r3.rotation.x=Math.PI/2;
-var glowD=add(hologram,new THREE.Mesh(new THREE.CircleGeometry(1.2,64),new THREE.MeshBasicMaterial({color:0x2ad4ff,transparent:true,opacity:0.24,depthWrite:false,toneMapped:false})),0,0.002,0);glowD.rotation.x=-Math.PI/2;
-var glowC=add(hologram,new THREE.Mesh(new THREE.CircleGeometry(0.4,48),new THREE.MeshBasicMaterial({color:0x9ff4ff,transparent:true,opacity:0.5,depthWrite:false,toneMapped:false})),0,0.004,0);glowC.rotation.x=-Math.PI/2;
-var NP=170,pgeo=new THREE.BufferGeometry(),ppos=new Float32Array(NP*3),pseed=[];
+var glowD=add(hologram,new THREE.Mesh(new THREE.CircleGeometry(1.2,64),new THREE.MeshBasicMaterial({color:0x2ad4ff,transparent:true,opacity:0.1,depthWrite:false,toneMapped:false})),0,0.002,0);glowD.rotation.x=-Math.PI/2;
+var glowC=add(hologram,new THREE.Mesh(new THREE.CircleGeometry(0.4,48),new THREE.MeshBasicMaterial({color:0x9ff4ff,transparent:true,opacity:0.22,depthWrite:false,toneMapped:false})),0,0.004,0);glowC.rotation.x=-Math.PI/2;
+var NP=80,pgeo=new THREE.BufferGeometry(),ppos=new Float32Array(NP*3),pseed=[];
 for(var pi=0;pi<NP;pi++){pseed.push({a:Math.random()*6.283,r:0.3+Math.random()*0.7,s:0.22+Math.random()*0.3,o:Math.random()});}
 pgeo.setAttribute('position',new THREE.BufferAttribute(ppos,3));
-var parts=new THREE.Points(pgeo,new THREE.PointsMaterial({color:0xbff6ff,size:0.045,transparent:true,opacity:0.9,depthWrite:false,blending:THREE.AdditiveBlending,toneMapped:false}));
+var parts=new THREE.Points(pgeo,new THREE.PointsMaterial({color:0xbff6ff,size:0.028,transparent:true,opacity:0.55,depthWrite:false,blending:THREE.AdditiveBlending,toneMapped:false}));
 parts.frustumCulled=false;hologram.add(parts);
 var ripM=new THREE.MeshBasicMaterial({color:0x9ff4ff,transparent:true,opacity:0.6,depthWrite:false,toneMapped:false});
 var rip=add(hologram,new THREE.Mesh(new THREE.TorusGeometry(0.5,0.012,8,80),ripM),0,0.006,0);rip.rotation.x=Math.PI/2;
-var NR=220,rpos=new Float32Array(NR*6),rcol=new Float32Array(NR*6);
+var NR=70,rpos=new Float32Array(NR*6),rcol=new Float32Array(NR*6);
 for(var ri=0;ri<NR;ri++){var ra=Math.random()*6.283,rt=0.08+Math.random()*1.3,rh=1.0+Math.random()*0.8,rb=ri*6,br=0.35+Math.random()*0.65;
-rpos[rb]=0;rpos[rb+1]=0.02;rpos[rb+2]=0;rpos[rb+3]=Math.cos(ra)*rt;rpos[rb+4]=rh;rpos[rb+5]=Math.sin(ra)*rt;
-rcol[rb]=0.55*br;rcol[rb+1]=0.92*br;rcol[rb+2]=br;}
+rpos[rb]=Math.cos(ra)*0.12;rpos[rb+1]=0.02;rpos[rb+2]=Math.sin(ra)*0.12;rpos[rb+3]=Math.cos(ra)*rt;rpos[rb+4]=rh;rpos[rb+5]=Math.sin(ra)*rt;
+rcol[rb]=0.2*br;rcol[rb+1]=0.38*br;rcol[rb+2]=0.5*br;}
 var rgeo=new THREE.BufferGeometry();rgeo.setAttribute('position',new THREE.BufferAttribute(rpos,3));rgeo.setAttribute('color',new THREE.BufferAttribute(rcol,3));
 var rays=new THREE.LineSegments(rgeo,new THREE.LineBasicMaterial({vertexColors:true,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,toneMapped:false}));rays.frustumCulled=false;hologram.add(rays);
 var gcv=document.createElement('canvas');gcv.width=gcv.height=128;var gcx=gcv.getContext('2d'),ggr=gcx.createRadialGradient(64,64,0,64,64,64);
 ggr.addColorStop(0,'rgba(255,255,255,1)');ggr.addColorStop(0.2,'rgba(150,240,255,0.7)');ggr.addColorStop(0.55,'rgba(60,170,255,0.18)');ggr.addColorStop(1,'rgba(60,170,255,0)');gcx.fillStyle=ggr;gcx.fillRect(0,0,128,128);
 var gtex=new THREE.CanvasTexture(gcv);gtex.colorSpace=THREE.SRGBColorSpace;
-var coreS=new THREE.Sprite(new THREE.SpriteMaterial({map:gtex,blending:THREE.AdditiveBlending,depthWrite:false,transparent:true,toneMapped:false}));coreS.scale.set(2.3,2.3,1);coreS.position.set(0,0.16,0);hologram.add(coreS);
+var coreS=new THREE.Sprite(new THREE.SpriteMaterial({map:gtex,blending:THREE.AdditiveBlending,depthWrite:false,transparent:true,opacity:0.45,toneMapped:false}));coreS.scale.set(0.9,0.9,1);coreS.position.set(0,0.16,0);hologram.add(coreS);
 var waves=new THREE.Group();scene.add(waves);
-for(var wi=0;wi<16;wi++){var wp=[],wc=[],wph=Math.random()*6.28,wa=wi/16*6.283,wr=0.9+Math.random()*1.0,wl=1.2+Math.random()*1.3;
+for(var wi=0;wi<6;wi++){var wp=[],wc=[],wph=Math.random()*6.28,wa=wi/6*6.283,wr=0.9+Math.random()*1.0,wl=1.2+Math.random()*1.3;
 for(var wu=0;wu<=40;wu++){var wf=wu/40,ang=wa+wf*1.6,rr2=wr+wf*wl*0.5,fa=Math.sin(wf*Math.PI);
-wp.push(Math.cos(ang)*rr2,0.03+wf*(0.5+(wi%4)*0.35)+Math.sin(wf*9+wph)*0.06,Math.sin(ang)*rr2*0.6);wc.push(0.3*fa,0.75*fa,fa);}
+wp.push(Math.cos(ang)*rr2,0.03+wf*(0.5+(wi%4)*0.35)+Math.sin(wf*9+wph)*0.06,Math.sin(ang)*rr2*0.6);wc.push(0.06*fa,0.16*fa,0.22*fa);}
 var wg=new THREE.BufferGeometry();wg.setAttribute('position',new THREE.Float32BufferAttribute(wp,3));wg.setAttribute('color',new THREE.Float32BufferAttribute(wc,3));
 waves.add(new THREE.Line(wg,new THREE.LineBasicMaterial({vertexColors:true,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,toneMapped:false})));}
 var bcv=document.createElement('canvas');bcv.width=4;bcv.height=256;var bcx=bcv.getContext('2d'),bgr=bcx.createLinearGradient(0,0,0,256);
 bgr.addColorStop(0,'rgba(120,235,255,0)');bgr.addColorStop(0.35,'rgba(120,235,255,0.25)');bgr.addColorStop(1,'rgba(170,246,255,0.95)');bcx.fillStyle=bgr;bcx.fillRect(0,0,4,256);
 var btex=new THREE.CanvasTexture(bcv);btex.colorSpace=THREE.SRGBColorSpace;
-var beamMat=new THREE.MeshBasicMaterial({map:btex,transparent:true,side:THREE.DoubleSide,depthWrite:false,blending:THREE.AdditiveBlending,toneMapped:false,opacity:0.75});
+var beamMat=new THREE.MeshBasicMaterial({map:btex,transparent:true,side:THREE.DoubleSide,depthWrite:false,blending:THREE.AdditiveBlending,toneMapped:false,opacity:0.3});
 add(hologram,new THREE.Mesh(new THREE.CylinderGeometry(1.15,0.14,1.75,64,1,true),beamMat),0,0.875,0);
 add(hologram,new THREE.Mesh(new THREE.CylinderGeometry(0.6,0.05,1.75,48,1,true),beamMat),0,0.875,0);
-var beamW=beamMat.clone();beamW.opacity=0.32;add(hologram,new THREE.Mesh(new THREE.CylinderGeometry(1.65,0.25,1.75,64,1,true),beamW),0,0.875,0);
+var beamW=beamMat.clone();beamW.opacity=0.1;add(hologram,new THREE.Mesh(new THREE.CylinderGeometry(1.65,0.25,1.75,64,1,true),beamW),0,0.875,0);
 var root=new THREE.Group();root.rotation.y=0.35;root.position.y=0.1;root.scale.setScalar(1.1);scene.add(root);
 var body=new THREE.Group();root.add(body);
 /* corps type humanoide */
@@ -360,6 +360,15 @@ var baseRing=add(body,new THREE.Mesh(new THREE.TorusGeometry(0.3,0.026,12,48),gl
 add(body,SP(1,white,0.7,0.5,0.5),0,1.82,0);
 add(body,SP(1,black,0.4,0.18,0.05),0,1.6,0.47);
 var chest=add(body,new THREE.Mesh(new THREE.CircleGeometry(0.055,32),glowMat),0,1.6,0.524);
+var igc=document.createElement('canvas');igc.width=igc.height=256;
+(function(){var g=igc.getContext('2d'),gr=g.createRadialGradient(70,250,0,70,250,320);
+gr.addColorStop(0,'#feda75');gr.addColorStop(0.25,'#fa7e1e');gr.addColorStop(0.5,'#d62976');gr.addColorStop(0.75,'#962fbf');gr.addColorStop(1,'#4f5bd5');
+g.fillStyle=gr;rr(g,12,12,232,232,66);g.fill();
+g.strokeStyle='#ffffff';g.lineWidth=16;rr(g,52,52,152,152,44);g.stroke();
+g.lineWidth=18;g.beginPath();g.arc(128,128,50,0,6.283);g.stroke();
+g.fillStyle='#ffffff';g.beginPath();g.arc(172,84,11,0,6.283);g.fill();})();
+var igt=new THREE.CanvasTexture(igc);igt.colorSpace=THREE.SRGBColorSpace;igt.anisotropy=4;
+add(body,new THREE.Mesh(new THREE.PlaneGeometry(0.3,0.3),new THREE.MeshBasicMaterial({map:igt,transparent:true,toneMapped:false})),0,1.93,0.506);
 var collar=add(body,new THREE.Mesh(new THREE.TorusGeometry(0.17,0.03,12,40),glowMat),0,2.22,0);collar.rotation.x=Math.PI/2;
 add(body,new THREE.Mesh(new THREE.CylinderGeometry(0.13,0.17,0.2,24),dg),0,2.2,0);
 /* bras : epaule grise, coude, poignet cannele, main a doigts */
