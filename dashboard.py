@@ -379,28 +379,30 @@ var root=new THREE.Group();root.rotation.y=0.35;root.position.y=0.1;root.scale.s
 var body=new THREE.Group();root.add(body);
 /* satellites en verre autour du robot : icones de boutique */
 var orbit=new THREE.Group();scene.add(orbit);var orbitCards=[];
-var orbitMat=new THREE.LineDashedMaterial({color:0x9beaff,transparent:true,opacity:0.5,dashSize:0.035,gapSize:0.055,depthWrite:false,toneMapped:false});
+var orbitMat=new THREE.LineDashedMaterial({color:0xb9f3ff,transparent:true,opacity:0.68,dashSize:0.028,gapSize:0.052,depthWrite:false,toneMapped:false});
+var trackMat=new THREE.MeshBasicMaterial({color:0x38cfff,toneMapped:false,transparent:true,opacity:0.18,blending:THREE.AdditiveBlending,depthWrite:false});
 function orbitArc(from,to,count){var pts=[];for(var oi=0;oi<=count;oi++){var oa=from+(to-from)*oi/count;pts.push(new THREE.Vector3(Math.cos(oa)*2.35,2.5+Math.sin(oa)*2.35,-0.2));}
+var curve=new THREE.CatmullRomCurve3(pts);orbit.add(new THREE.Mesh(new THREE.TubeGeometry(curve,count*2,0.006,6,false),trackMat));
 var line=new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts),orbitMat);line.computeLineDistances();orbit.add(line);}
 // Deux arcs latéraux et supérieurs, avec une ouverture derrière le bas du robot.
 orbitArc(0,Math.PI*1.25,90);orbitArc(Math.PI*1.75,Math.PI*2,24);
 function shopIcon(kind){
-var c=document.createElement('canvas');c.width=c.height=128;var g=c.getContext('2d');g.strokeStyle='#d8f7ff';g.lineWidth=6;g.lineCap='round';g.lineJoin='round';
+var c=document.createElement('canvas');c.width=c.height=128;var g=c.getContext('2d');g.strokeStyle='#e6fbff';g.lineWidth=7;g.lineCap='round';g.lineJoin='round';g.shadowColor='#5bdcff';g.shadowBlur=9;
 function path(points,close){g.beginPath();g.moveTo(points[0][0],points[0][1]);for(var n=1;n<points.length;n++)g.lineTo(points[n][0],points[n][1]);if(close)g.closePath();g.stroke();}
 if(kind==='bag'){path([[36,47],[92,47],[87,96],[41,96]],true);g.beginPath();g.moveTo(47,48);g.bezierCurveTo(47,22,81,22,81,48);g.stroke();}
 if(kind==='gift'){path([[29,52],[99,52],[99,98],[29,98]],true);path([[64,52],[64,98]]);path([[25,43],[103,43],[103,55],[25,55]],true);g.beginPath();g.ellipse(53,35,12,8,-.5,0,Math.PI*2);g.ellipse(75,35,12,8,.5,0,Math.PI*2);g.stroke();}
 if(kind==='dress'){path([[49,25],[40,38],[28,47],[39,59],[46,53],[42,99],[88,99],[83,53],[91,59],[101,47],[87,38],[77,25],[68,36],[58,36]],true);}
-if(kind==='shoe'){g.beginPath();g.moveTo(28,74);g.quadraticCurveTo(48,70,57,47);g.lineTo(68,65);g.quadraticCurveTo(78,77,99,79);g.lineTo(99,91);g.lineTo(33,91);g.quadraticCurveTo(26,88,28,74);g.stroke();path([[56,51],[54,88]]);}
+if(kind==='shoe'){g.beginPath();g.moveTo(23,76);g.quadraticCurveTo(37,72,48,43);g.quadraticCurveTo(53,34,59,47);g.lineTo(68,63);g.quadraticCurveTo(78,74,102,77);g.lineTo(102,88);g.lineTo(40,88);g.lineTo(37,99);g.lineTo(29,99);g.lineTo(31,81);g.quadraticCurveTo(25,81,23,76);g.closePath();g.fillStyle='rgba(215,248,255,0.2)';g.fill();g.stroke();g.beginPath();g.moveTo(48,46);g.lineTo(43,87);g.stroke();}
 if(kind==='cart'){path([[28,35],[39,35],[49,79],[91,79],[101,49],[43,49]]);g.beginPath();g.arc(57,94,6,0,Math.PI*2);g.arc(86,94,6,0,Math.PI*2);g.stroke();}
 var tx=new THREE.CanvasTexture(c);tx.colorSpace=THREE.SRGBColorSpace;tx.anisotropy=4;return tx;
 }
 function glassCard(kind,x,y){
-var card=new THREE.Group();card.position.set(x,y,0.22);card.userData={baseY:y,phase:Math.random()*6.28};orbit.add(card);
-var pane=new THREE.Mesh(new THREE.CircleGeometry(0.34,48),new THREE.MeshPhysicalMaterial({color:0x16384b,transparent:true,opacity:0.62,roughness:0.16,metalness:0.25,clearcoat:1,clearcoatRoughness:0.08,depthWrite:false}));card.add(pane);
-var rim=new THREE.Mesh(new THREE.TorusGeometry(0.35,0.012,10,64),new THREE.MeshBasicMaterial({color:0x86e9ff,toneMapped:false,transparent:true,opacity:0.95,depthWrite:false}));card.add(rim);
-var halo=new THREE.Mesh(new THREE.TorusGeometry(0.405,0.004,6,64),new THREE.MeshBasicMaterial({color:0x4ccfff,toneMapped:false,transparent:true,opacity:0.38,depthWrite:false}));card.add(halo);
+var card=new THREE.Group();card.position.set(x,y,0.22);card.scale.setScalar(1.1);card.userData={baseY:y,phase:Math.random()*6.28};orbit.add(card);
+var pane=new THREE.Mesh(new THREE.CircleGeometry(0.34,48),new THREE.MeshPhysicalMaterial({color:0x102b3a,emissive:0x071b28,emissiveIntensity:0.65,transparent:true,opacity:0.68,roughness:0.12,metalness:0.22,clearcoat:1,clearcoatRoughness:0.06,depthWrite:false}));card.add(pane);
+var rim=new THREE.Mesh(new THREE.TorusGeometry(0.35,0.014,10,64),new THREE.MeshBasicMaterial({color:0xb9f3ff,toneMapped:false,transparent:true,opacity:0.98,depthWrite:false}));card.add(rim);
+var halo=new THREE.Mesh(new THREE.TorusGeometry(0.42,0.005,6,64),new THREE.MeshBasicMaterial({color:0x4ccfff,toneMapped:false,transparent:true,opacity:0.48,blending:THREE.AdditiveBlending,depthWrite:false}));card.add(halo);
 var shine=new THREE.Mesh(new THREE.CircleGeometry(0.16,24),new THREE.MeshBasicMaterial({color:0xffffff,toneMapped:false,transparent:true,opacity:0.1,depthWrite:false}));shine.scale.set(0.65,1.2,1);shine.position.set(-0.12,0.12,0.012);card.add(shine);
-var icon=new THREE.Mesh(new THREE.PlaneGeometry(0.34,0.34),new THREE.MeshBasicMaterial({map:shopIcon(kind),transparent:true,toneMapped:false,depthWrite:false}));icon.position.z=0.025;card.add(icon);
+var icon=new THREE.Mesh(new THREE.PlaneGeometry(0.36,0.36),new THREE.MeshBasicMaterial({map:shopIcon(kind),transparent:true,toneMapped:false,depthWrite:false}));icon.position.z=0.025;card.add(icon);
 orbitCards.push(card);return card;
 }
 glassCard('gift',-1.58,3.95);glassCard('bag',0,4.65);glassCard('dress',1.58,3.95);glassCard('cart',-2.32,2.0);glassCard('shoe',2.32,2.0);
