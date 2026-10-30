@@ -226,11 +226,11 @@ var scene=new THREE.Scene();
 var pm=new THREE.PMREMGenerator(renderer);
 scene.environment=pm.fromScene(new ENV.RoomEnvironment(),0.04).texture;
 var camera=new THREE.PerspectiveCamera(30,1,0.1,80);
-camera.position.set(0,4.0,10.9);camera.lookAt(0,1.2,0);
+camera.position.set(0,5.3,10.6);camera.lookAt(0,1.1,0);
 
 var key=new THREE.DirectionalLight(0xf4f8f6,1.6);key.position.set(3,6,6);scene.add(key);
-var red=new THREE.PointLight(0xe0201b,70,16);red.position.set(-4,2.5,-1.5);scene.add(red);
-var cyanL=new THREE.PointLight(0x62eaff,9,4);cyanL.position.set(0,0.7,0.4);scene.add(cyanL);
+var red=new THREE.PointLight(0xe0201b,26,16);red.position.set(-4,2.5,-1.5);scene.add(red);
+var cyanL=new THREE.PointLight(0x62eaff,18,5);cyanL.position.set(0,0.55,0.3);scene.add(cyanL);
 var mintL=new THREE.PointLight(0x5ff0c8,18,10);mintL.position.set(3,1.5,3);scene.add(mintL);
 
 var GLOW='#5ff0c8';
@@ -279,23 +279,25 @@ function rrShape(w,h,r){var s=new THREE.Shape(),x=-w/2,y=-h/2;s.moveTo(x+r,y);s.
 s.lineTo(x+w,y+h-r);s.absarc(x+w-r,y+h-r,r,0,Math.PI/2,false);s.lineTo(x+r,y+h);s.absarc(x+r,y+h-r,r,Math.PI/2,Math.PI,false);
 s.lineTo(x,y+r);s.absarc(x+r,y+r,r,Math.PI,Math.PI*1.5,false);return s;}
 var PW=3.7,PH=1.95,SW=3.44,SH=1.72,CW=1376,CH=688;
-var phone=new THREE.Group();phone.position.y=-0.1;phone.rotation.y=-0.22;phone.scale.setScalar(1.08);scene.add(phone);
+var phone=new THREE.Group();phone.position.y=-0.1;phone.rotation.y=-0.22;phone.scale.setScalar(1.2);scene.add(phone);
 var frameG=new THREE.ExtrudeGeometry(rrShape(PW,PH,0.34),{depth:0.14,bevelEnabled:true,bevelThickness:0.03,bevelSize:0.03,bevelSegments:5,curveSegments:28});
 frameG.translate(0,0,-0.07);
-var frameM=new THREE.MeshPhysicalMaterial({color:0x2a3a96,roughness:0.26,metalness:0.85,clearcoat:1,clearcoatRoughness:0.1});
+var frameM=new THREE.MeshPhysicalMaterial({color:0x9aa6c8,roughness:0.2,metalness:0.95,clearcoat:1,clearcoatRoughness:0.08});
 var frameMesh=new THREE.Mesh(frameG,frameM);frameMesh.rotation.x=-Math.PI/2;phone.add(frameMesh);
 var glassM=new THREE.MeshPhysicalMaterial({color:0x04060c,roughness:0.12,metalness:0.2,clearcoat:1,clearcoatRoughness:0.05});
 var glass=new THREE.Mesh(new THREE.ShapeGeometry(rrShape(PW-0.1,PH-0.1,0.29),24),glassM);glass.rotation.x=-Math.PI/2;glass.position.y=0.101;phone.add(glass);
 var pc=document.createElement('canvas');pc.width=CW;pc.height=CH;
 (function(){var g=pc.getContext('2d');rr(g,0,0,CW,CH,64);g.clip();
-var bgG=g.createLinearGradient(0,0,CW,CH);bgG.addColorStop(0,'#0a1550');bgG.addColorStop(0.55,'#2a1c8a');bgG.addColorStop(1,'#4b1f9e');g.fillStyle=bgG;g.fillRect(0,0,CW,CH);
-var hg=g.createRadialGradient(CW/2,CH/2,10,CW/2,CH/2,430);hg.addColorStop(0,'rgba(98,234,255,0.55)');hg.addColorStop(1,'rgba(98,234,255,0)');g.fillStyle=hg;g.fillRect(0,0,CW,CH);
-g.fillStyle='rgba(255,255,255,0.75)';rr(g,60,34,110,16,8);g.fill();rr(g,CW-180,34,120,16,8);g.fill();
-function card(x,y,w,h,c){g.fillStyle=c;rr(g,x,y,w,h,36);g.fill();}
-card(70,90,330,170,'rgba(120,90,255,0.55)');card(CW-400,90,330,170,'rgba(60,160,255,0.5)');
-card(70,300,260,170,'rgba(255,255,255,0.12)');card(CW-330,300,260,170,'rgba(255,255,255,0.12)');
+var bgG=g.createLinearGradient(0,0,CW,CH);bgG.addColorStop(0,'#0f2ad0');bgG.addColorStop(0.5,'#4a2bd8');bgG.addColorStop(1,'#8a35ff');g.fillStyle=bgG;g.fillRect(0,0,CW,CH);
+var hg=g.createRadialGradient(CW/2,CH/2,10,CW/2,CH/2,520);hg.addColorStop(0,'rgba(120,240,255,0.75)');hg.addColorStop(1,'rgba(120,240,255,0)');g.fillStyle=hg;g.fillRect(0,0,CW,CH);
+g.fillStyle='rgba(255,255,255,0.8)';rr(g,60,34,110,16,8);g.fill();rr(g,CW-180,34,120,16,8);g.fill();
+function bub(x,y,w,h,c){g.fillStyle=c;rr(g,x,y,w,h,40);g.fill();g.fillStyle='rgba(255,255,255,0.92)';for(var k=0;k<3;k++){g.beginPath();g.arc(x+w/2+(k-1)*34,y+h/2,10,0,6.283);g.fill();}}
+bub(70,100,300,130,'rgba(150,110,255,0.8)');bub(CW-370,170,300,130,'rgba(70,170,255,0.75)');
+g.fillStyle='rgba(255,255,255,0.2)';rr(g,70,280,360,22,11);g.fill();rr(g,70,320,260,22,11);g.fill();rr(g,CW-430,360,360,22,11);g.fill();rr(g,CW-330,400,260,22,11);g.fill();
 var cols=['#ff5a50','#ffb84d','#4cd7a0','#4da3ff','#a56bff','#ff6fb0'];
-cols.forEach(function(c,i){g.fillStyle=c;rr(g,CW/2-cols.length*55+i*110+9,CH-150,92,92,26);g.fill();});})();
+cols.forEach(function(c,i){g.fillStyle=c;rr(g,CW/2-cols.length*55+i*110+9,CH-150,92,92,26);g.fill();});
+var sh=g.createLinearGradient(0,0,CW*0.6,CH);sh.addColorStop(0,'rgba(255,255,255,0.24)');sh.addColorStop(0.5,'rgba(255,255,255,0)');g.fillStyle=sh;
+g.beginPath();g.moveTo(0,0);g.lineTo(CW*0.7,0);g.lineTo(CW*0.28,CH);g.lineTo(0,CH);g.closePath();g.fill();})();
 var ptex=new THREE.CanvasTexture(pc);ptex.colorSpace=THREE.SRGBColorSpace;ptex.anisotropy=8;
 var phScr=new THREE.Mesh(new THREE.PlaneGeometry(SW,SH),new THREE.MeshBasicMaterial({map:ptex,transparent:true,toneMapped:false}));
 phScr.rotation.x=-Math.PI/2;phScr.position.y=0.104;phone.add(phScr);
@@ -311,8 +313,19 @@ var r2=add(hologram,new THREE.Mesh(new THREE.TorusGeometry(1.08,0.009,10,96),hol
 var r3=add(hologram,new THREE.Mesh(new THREE.TorusGeometry(0.46,0.014,10,80),holo),0,0.005,0);r3.rotation.x=Math.PI/2;
 var glowD=add(hologram,new THREE.Mesh(new THREE.CircleGeometry(1.2,64),new THREE.MeshBasicMaterial({color:0x2ad4ff,transparent:true,opacity:0.2,depthWrite:false,toneMapped:false})),0,0.002,0);glowD.rotation.x=-Math.PI/2;
 var glowC=add(hologram,new THREE.Mesh(new THREE.CircleGeometry(0.4,48),new THREE.MeshBasicMaterial({color:0x9ff4ff,transparent:true,opacity:0.5,depthWrite:false,toneMapped:false})),0,0.004,0);glowC.rotation.x=-Math.PI/2;
-var beamMat=new THREE.MeshBasicMaterial({color:0x39cfff,toneMapped:false,transparent:true,opacity:0.16,side:THREE.DoubleSide,depthWrite:false});
-add(hologram,new THREE.Mesh(new THREE.CylinderGeometry(0.36,0.84,0.7,48,1,true),beamMat),0,0.36,0);
+var NP=70,pgeo=new THREE.BufferGeometry(),ppos=new Float32Array(NP*3),pseed=[];
+for(var pi=0;pi<NP;pi++){pseed.push({a:Math.random()*6.283,r:0.3+Math.random()*0.7,s:0.22+Math.random()*0.3,o:Math.random()});}
+pgeo.setAttribute('position',new THREE.BufferAttribute(ppos,3));
+var parts=new THREE.Points(pgeo,new THREE.PointsMaterial({color:0xbff6ff,size:0.045,transparent:true,opacity:0.9,depthWrite:false,blending:THREE.AdditiveBlending,toneMapped:false}));
+parts.frustumCulled=false;hologram.add(parts);
+var ripM=new THREE.MeshBasicMaterial({color:0x9ff4ff,transparent:true,opacity:0.6,depthWrite:false,toneMapped:false});
+var rip=add(hologram,new THREE.Mesh(new THREE.TorusGeometry(0.5,0.012,8,80),ripM),0,0.006,0);rip.rotation.x=Math.PI/2;
+var bcv=document.createElement('canvas');bcv.width=4;bcv.height=256;var bcx=bcv.getContext('2d'),bgr=bcx.createLinearGradient(0,0,0,256);
+bgr.addColorStop(0,'rgba(120,235,255,0)');bgr.addColorStop(0.35,'rgba(120,235,255,0.25)');bgr.addColorStop(1,'rgba(170,246,255,0.95)');bcx.fillStyle=bgr;bcx.fillRect(0,0,4,256);
+var btex=new THREE.CanvasTexture(bcv);btex.colorSpace=THREE.SRGBColorSpace;
+var beamMat=new THREE.MeshBasicMaterial({map:btex,transparent:true,side:THREE.DoubleSide,depthWrite:false,blending:THREE.AdditiveBlending,toneMapped:false,opacity:0.75});
+add(hologram,new THREE.Mesh(new THREE.CylinderGeometry(0.58,0.2,0.95,64,1,true),beamMat),0,0.475,0);
+add(hologram,new THREE.Mesh(new THREE.CylinderGeometry(0.3,0.07,0.95,48,1,true),beamMat),0,0.475,0);
 var root=new THREE.Group();root.rotation.y=0.35;root.position.y=0.1;scene.add(root);
 var body=new THREE.Group();root.add(body);
 /* corps type humanoide */
@@ -416,7 +429,10 @@ armR.rotation.z=armRz;armL.rotation.z=armLz;armL.rotation.x=armLx;
 bulb.material.emissiveIntensity=1.3+Math.sin(t*3)*0.7;
 chest.scale.setScalar(0.95+Math.sin(t*2.2)*0.06);
 hologram.rotation.y=t*0.16;hologram.scale.setScalar(1+Math.sin(t*2.1)*0.025);holo.opacity=0.72+Math.sin(t*2.1)*0.12;
-red.intensity=65+Math.sin(t*1.2)*8;
+red.intensity=26+Math.sin(t*1.2)*4;
+for(var j=0;j<NP;j++){var q=pseed[j],k=(t*q.s+q.o)%1,rd=(0.1+0.42*k)*q.r;ppos[j*3]=Math.cos(q.a+t*0.3)*rd;ppos[j*3+1]=0.04+k*0.85;ppos[j*3+2]=Math.sin(q.a+t*0.3)*rd;}
+pgeo.attributes.position.needsUpdate=true;
+var rk=(t*0.55)%1;rip.scale.setScalar(0.5+rk*1.7);ripM.opacity=0.7*(1-rk);
 renderer.render(scene,camera);
 if(!shown){shown=true;canvas.classList.add('on');if(svg)svg.style.display='none';}
 if(!reduce)requestAnimationFrame(frame);
