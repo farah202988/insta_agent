@@ -211,7 +211,7 @@ AUTH_IMPORTMAP = '<script type="importmap">{"imports":{"three":"https://cdn.jsde
 AUTH_3D_JS = """
 (async function(){
 var stage=document.querySelector('.stage'),svg=document.querySelector('.robot'),pw=document.getElementById('password'),un=document.getElementById('username');
-console.log('InstaAgent robot v12 : faisceau volumetrique');
+console.log('InstaAgent robot v13 : cercles HUD');
 if(!stage)return;
 var THREE,ENV;
 try{
@@ -328,6 +328,31 @@ var gcv=document.createElement('canvas');gcv.width=gcv.height=128;var gcx=gcv.ge
 ggr.addColorStop(0,'rgba(255,255,255,1)');ggr.addColorStop(0.2,'rgba(150,240,255,0.7)');ggr.addColorStop(0.55,'rgba(60,170,255,0.18)');ggr.addColorStop(1,'rgba(60,170,255,0)');gcx.fillStyle=ggr;gcx.fillRect(0,0,128,128);
 var gtex=new THREE.CanvasTexture(gcv);gtex.colorSpace=THREE.SRGBColorSpace;parts.material.map=gtex;parts.material.needsUpdate=true;
 var coreS=new THREE.Sprite(new THREE.SpriteMaterial({map:gtex,blending:THREE.AdditiveBlending,depthWrite:false,transparent:true,opacity:0.5*LIGHT,toneMapped:false}));coreS.scale.set(0.9,0.9,1);coreS.position.set(0,0.16,0);hologram.add(coreS);
+/* interface HUD a plat sur l'ecran (arcs, blocs, pointilles, graduations), 3 couches qui tournent */
+var hudL=[];
+function harc(g,r,a0,a1,lw,col){g.strokeStyle=col;g.lineWidth=lw;g.beginPath();g.arc(0,0,r,a0*Math.PI/180,a1*Math.PI/180);g.stroke();}
+function hudLayer(draw,size,speed){var c=document.createElement('canvas');c.width=c.height=1024;var g=c.getContext('2d');
+g.translate(512,512);g.lineCap='butt';g.shadowColor='rgba(80,210,255,0.9)';g.shadowBlur=14;draw(g);
+var tx=new THREE.CanvasTexture(c);tx.colorSpace=THREE.SRGBColorSpace;tx.anisotropy=8;
+var m=new THREE.Mesh(new THREE.PlaneGeometry(size,size),new THREE.MeshBasicMaterial({map:tx,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,toneMapped:false}));
+m.rotation.x=-Math.PI/2;var h=new THREE.Group();h.add(m);h.userData.sp=speed;hologram.add(h);hudL.push(h);return h;}
+hudLayer(function(g){
+harc(g,486,0,360,3,'rgba(160,240,255,0.85)');
+g.setLineDash([3,16]);harc(g,455,0,360,6,'rgba(120,225,255,0.6)');g.setLineDash([]);
+harc(g,420,-30,60,12,'rgba(170,245,255,0.9)');harc(g,420,110,150,12,'rgba(170,245,255,0.9)');harc(g,420,200,300,12,'rgba(170,245,255,0.9)');harc(g,420,320,335,12,'rgba(170,245,255,0.9)');
+},1.7,0.10);
+hudLayer(function(g){
+for(var i=0;i<12;i++){harc(g,350,i*30+4,i*30+24,38,i%3===0?'rgba(200,250,255,0.8)':'rgba(110,215,255,0.42)');}
+harc(g,385,0,360,3,'rgba(140,230,255,0.6)');harc(g,312,0,360,3,'rgba(140,230,255,0.6)');
+},1.7,-0.18);
+hudLayer(function(g){
+var gr=g.createRadialGradient(0,0,0,0,0,170);gr.addColorStop(0,'rgba(120,230,255,0.45)');gr.addColorStop(1,'rgba(120,230,255,0)');g.fillStyle=gr;g.beginPath();g.arc(0,0,170,0,6.283);g.fill();
+harc(g,265,0,360,9,'rgba(190,248,255,0.95)');harc(g,232,0,360,3,'rgba(140,230,255,0.7)');
+g.strokeStyle='rgba(170,240,255,0.7)';g.lineWidth=3;
+for(var i=0;i<72;i++){var a=i*Math.PI/36,r2=(i%6===0)?306:296;g.beginPath();g.moveTo(Math.cos(a)*282,Math.sin(a)*282);g.lineTo(Math.cos(a)*r2,Math.sin(a)*r2);g.stroke();}
+harc(g,190,20,100,16,'rgba(170,245,255,0.85)');harc(g,190,140,220,16,'rgba(170,245,255,0.85)');harc(g,190,260,340,16,'rgba(170,245,255,0.85)');
+},1.7,0.35);
+r1.visible=false;r2.visible=false;r3.visible=false;rip.visible=false;
 var waves=new THREE.Group();scene.add(waves);
 for(var wi=0;wi<0;wi++){var wp=[],wc=[],wph=Math.random()*6.28,wa=wi/6*6.283,wr=0.9+Math.random()*1.0,wl=1.2+Math.random()*1.3;
 for(var wu=0;wu<=40;wu++){var wf=wu/40,ang=wa+wf*1.6,rr2=wr+wf*wl*0.5,fa=Math.sin(wf*Math.PI);
@@ -458,7 +483,7 @@ chest.scale.setScalar(0.95+Math.sin(t*2.2)*0.06);
 hologram.rotation.y=t*0.16;hologram.scale.setScalar(1+Math.sin(t*2.1)*0.025);holo.opacity=0.72+Math.sin(t*2.1)*0.12;
 red.intensity=26+Math.sin(t*1.2)*4;
 for(var j=0;j<NP;j++){var q=pseed[j],k=(t*q.s+q.o)%1,rd=(0.08+1.0*k)*q.r;ppos[j*3]=Math.cos(q.a+t*0.3)*rd;ppos[j*3+1]=0.04+k*1.7;ppos[j*3+2]=Math.sin(q.a+t*0.3)*rd;}
-pgeo.attributes.position.needsUpdate=true;waves.rotation.y=t*0.06;
+pgeo.attributes.position.needsUpdate=true;waves.rotation.y=t*0.06;for(var hi=0;hi<hudL.length;hi++)hudL[hi].rotation.y=t*hudL[hi].userData.sp;
 var rk=(t*0.55)%1;rip.scale.setScalar(0.5+rk*1.7);ripM.opacity=0.7*(1-rk);
 renderer.render(scene,camera);
 if(!shown){shown=true;canvas.classList.add('on');if(svg)svg.style.display='none';}
