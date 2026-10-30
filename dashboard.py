@@ -309,8 +309,8 @@ var hologram=new THREE.Group();hologram.position.set(0,0.03,0);scene.add(hologra
 var r1=add(hologram,new THREE.Mesh(new THREE.TorusGeometry(0.78,0.022,12,96),holo),0,0,0);r1.rotation.x=Math.PI/2;
 var r2=add(hologram,new THREE.Mesh(new THREE.TorusGeometry(1.08,0.009,10,96),holo),0,0.01,0);r2.rotation.x=Math.PI/2;
 var r3=add(hologram,new THREE.Mesh(new THREE.TorusGeometry(0.46,0.014,10,80),holo),0,0.005,0);r3.rotation.x=Math.PI/2;
-var glowD=add(hologram,new THREE.Mesh(new THREE.CircleGeometry(1.2,64),new THREE.MeshBasicMaterial({color:0x2ad4ff,transparent:true,opacity:0.06*LIGHT,depthWrite:false,toneMapped:false})),0,0.002,0);glowD.rotation.x=-Math.PI/2;
-var glowC=add(hologram,new THREE.Mesh(new THREE.CircleGeometry(0.4,48),new THREE.MeshBasicMaterial({color:0x9ff4ff,transparent:true,opacity:0.08*LIGHT,depthWrite:false,toneMapped:false})),0,0.004,0);glowC.rotation.x=-Math.PI/2;
+var glowD=add(hologram,new THREE.Mesh(new THREE.CircleGeometry(1.2,64),new THREE.MeshBasicMaterial({color:0x2ad4ff,transparent:true,opacity:0.12*LIGHT,depthWrite:false,toneMapped:false})),0,0.002,0);glowD.rotation.x=-Math.PI/2;
+var glowC=add(hologram,new THREE.Mesh(new THREE.CircleGeometry(0.4,48),new THREE.MeshBasicMaterial({color:0x9ff4ff,transparent:true,opacity:0.2*LIGHT,depthWrite:false,toneMapped:false})),0,0.004,0);glowC.rotation.x=-Math.PI/2;
 var NP=70,pgeo=new THREE.BufferGeometry(),ppos=new Float32Array(NP*3),pseed=[];
 for(var pi=0;pi<NP;pi++){pseed.push({a:Math.random()*6.283,r:0.3+Math.random()*0.7,s:0.22+Math.random()*0.3,o:Math.random()});}
 pgeo.setAttribute('position',new THREE.BufferAttribute(ppos,3));
@@ -327,7 +327,7 @@ var rays=new THREE.LineSegments(rgeo,new THREE.LineBasicMaterial({vertexColors:t
 var gcv=document.createElement('canvas');gcv.width=gcv.height=128;var gcx=gcv.getContext('2d'),ggr=gcx.createRadialGradient(64,64,0,64,64,64);
 ggr.addColorStop(0,'rgba(255,255,255,1)');ggr.addColorStop(0.2,'rgba(150,240,255,0.7)');ggr.addColorStop(0.55,'rgba(60,170,255,0.18)');ggr.addColorStop(1,'rgba(60,170,255,0)');gcx.fillStyle=ggr;gcx.fillRect(0,0,128,128);
 var gtex=new THREE.CanvasTexture(gcv);gtex.colorSpace=THREE.SRGBColorSpace;parts.material.map=gtex;parts.material.needsUpdate=true;
-var coreS=new THREE.Sprite(new THREE.SpriteMaterial({map:gtex,blending:THREE.AdditiveBlending,depthWrite:false,transparent:true,opacity:0.5*LIGHT,toneMapped:false}));coreS.scale.set(0.9,0.9,1);coreS.position.set(0,0.16,0);hologram.add(coreS);
+var coreS=new THREE.Sprite(new THREE.SpriteMaterial({map:gtex,blending:THREE.AdditiveBlending,depthWrite:false,transparent:true,opacity:0.9*LIGHT,toneMapped:false}));coreS.scale.set(0.9,0.9,1);coreS.position.set(0,0.16,0);hologram.add(coreS);
 /* interface HUD a plat sur l'ecran (arcs, blocs, pointilles, graduations), 3 couches qui tournent */
 var hudL=[];
 function harc(g,r,a0,a1,lw,col){g.strokeStyle=col;g.lineWidth=lw;g.beginPath();g.arc(0,0,r,a0*Math.PI/180,a1*Math.PI/180);g.stroke();}
@@ -352,7 +352,7 @@ g.strokeStyle='rgba(170,240,255,0.7)';g.lineWidth=3;
 for(var i=0;i<72;i++){var a=i*Math.PI/36,r2=(i%6===0)?306:296;g.beginPath();g.moveTo(Math.cos(a)*282,Math.sin(a)*282);g.lineTo(Math.cos(a)*r2,Math.sin(a)*r2);g.stroke();}
 harc(g,190,20,100,16,'rgba(170,245,255,0.85)');harc(g,190,140,220,16,'rgba(170,245,255,0.85)');harc(g,190,260,340,16,'rgba(170,245,255,0.85)');
 },1.7,0.35);
-r1.visible=false;r2.visible=false;r3.visible=false;rip.visible=false;
+r1.visible=true;r2.visible=true;r3.visible=true;rip.visible=true;
 var waves=new THREE.Group();scene.add(waves);
 for(var wi=0;wi<0;wi++){var wp=[],wc=[],wph=Math.random()*6.28,wa=wi/6*6.283,wr=0.9+Math.random()*1.0,wl=1.2+Math.random()*1.3;
 for(var wu=0;wu<=40;wu++){var wf=wu/40,ang=wa+wf*1.6,rr2=wr+wf*wl*0.5,fa=Math.sin(wf*Math.PI);
@@ -368,7 +368,7 @@ uniforms:{uColor:{value:new THREE.Vector3(0.35,0.82,1.0)},uOpacity:{value:op*LIG
 vertexShader:'varying vec3 vN;varying vec3 vV;varying float vH;void main(){vec4 mv=modelViewMatrix*vec4(position,1.0);vN=normalize(normalMatrix*normal);vV=normalize(-mv.xyz);vH=uv.y;gl_Position=projectionMatrix*mv;}',
 fragmentShader:'uniform vec3 uColor;uniform float uOpacity;varying vec3 vN;varying vec3 vV;varying float vH;void main(){float f=abs(dot(normalize(vN),normalize(vV)));float a=uOpacity*pow(f,2.0)*pow(1.0-vH,1.4);gl_FragColor=vec4(uColor,a);}'});
 add(hologram,new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,64,1,true),m),0,h/2,0);}
-beamCone(1.1,0.14,1.75,0.5);beamCone(0.55,0.05,1.75,0.7);beamCone(0.2,0.03,1.75,1.0);
+beamCone(1.1,0.14,1.75,0.5);beamCone(0.55,0.05,1.75,0.7);beamCone(0.2,0.03,1.75,1.0);beamCone(0.075,0.012,1.95,1.6);
 var root=new THREE.Group();root.rotation.y=0.35;root.position.y=0.1;root.scale.setScalar(1.1);scene.add(root);
 var body=new THREE.Group();root.add(body);
 /* corps type humanoide */
@@ -480,11 +480,11 @@ armLx+=((shy>0.5?-1.35:0)-armLx)*f12;
 armR.rotation.z=armRz;armL.rotation.z=armLz;armL.rotation.x=armLx;
 bulb.material.emissiveIntensity=1.3+Math.sin(t*3)*0.7;
 chest.scale.setScalar(0.95+Math.sin(t*2.2)*0.06);
-hologram.rotation.y=t*0.16;hologram.scale.setScalar(1+Math.sin(t*2.1)*0.025);holo.opacity=0.72+Math.sin(t*2.1)*0.12;
+hologram.rotation.y=t*0.16;hologram.scale.setScalar(1+Math.sin(t*2.1)*0.025);holo.opacity=0.9+Math.sin(t*2.1)*0.06;
 red.intensity=26+Math.sin(t*1.2)*4;
 for(var j=0;j<NP;j++){var q=pseed[j],k=(t*q.s+q.o)%1,rd=(0.08+1.0*k)*q.r;ppos[j*3]=Math.cos(q.a+t*0.3)*rd;ppos[j*3+1]=0.04+k*1.7;ppos[j*3+2]=Math.sin(q.a+t*0.3)*rd;}
 pgeo.attributes.position.needsUpdate=true;waves.rotation.y=t*0.06;for(var hi=0;hi<hudL.length;hi++)hudL[hi].rotation.y=t*hudL[hi].userData.sp;
-var rk=(t*0.55)%1;rip.scale.setScalar(0.5+rk*1.7);ripM.opacity=0.7*(1-rk);
+var rk=(t*0.55)%1;rip.scale.setScalar(0.5+rk*1.7);ripM.opacity=0.82*(1-rk);
 renderer.render(scene,camera);
 if(!shown){shown=true;canvas.classList.add('on');if(svg)svg.style.display='none';}
 if(!reduce)requestAnimationFrame(frame);
